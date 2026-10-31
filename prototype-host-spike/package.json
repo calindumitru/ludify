@@ -1,0 +1,24 @@
+{
+  "name": "ludify-host-spike-PROTOTYPE",
+  "private": true,
+  "type": "module",
+  "description": "THROWAWAY spike for ticket #6. Never merged.",
+  "scripts": {
+    "setup": "./fetch-assets.sh",
+    "build": "node build.mjs",
+    "start": "node build.mjs && node server.mjs",
+    "smoke": "node build.mjs && npx esbuild check/harness.js --bundle --format=iife --outfile=dist/harness.js && node check/smoke.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@modelcontextprotocol/core": "^2.4.0",
+    "@modelcontextprotocol/ext-apps": "^2.0.4",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "esbuild": "^0.28.2",
+    "express": "^5.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}
