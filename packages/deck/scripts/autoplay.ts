@@ -61,7 +61,12 @@ async function run(scheme: 'light' | 'dark') {
   p.on('dialog', d => { errs.push(`${scheme}: a ${d.type()} dialog opened: ${d.message()}`); void d.dismiss(); });
   const check = async (where: string) => {
     for (const x of await unsafeMarkup(p)) errs.push(`${scheme}, ${where}: ${x}`);
-    const [sw, vw] = await p.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
+    // Measured once main's slide-in animations end: a card enters from 18 px to the right.
+    const [sw, vw] = await p.evaluate(async () => {
+      const moving = document.getAnimations().filter(a => (a.effect as KeyframeEffect | null)?.target?.closest('main'));
+      await Promise.race([Promise.all(moving.map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, 1000))]);
+      return [document.documentElement.scrollWidth, innerWidth];
+    });
     if (sw > vw) errs.push(`${scheme}, ${where}: scrolls sideways (${sw}px wide in a ${vw}px window)`);
   };
 
