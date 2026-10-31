@@ -1,6 +1,6 @@
 # Ludify
 
-Turns a research question into a short, playable brief, researched on the user's own Claude or
+Turns a research question into a short, playable deck, researched on the user's own Claude or
 ChatGPT usage. Start from [SPEC.md](SPEC.md); v1 is decided and being built in slices.
 
 - **Build work** is `ready-for-agent` issues with a `size:*` label, run with the `slice-flow`
