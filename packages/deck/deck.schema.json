@@ -92,6 +92,8 @@
         "title": { "$ref": "#/$defs/plain" },
         "lead": { "$ref": "#/$defs/plain" },
         "gistTitle": { "$ref": "#/$defs/plain" },
+        "gistOpen": { "$ref": "#/$defs/plain" },
+        "gistClose": { "$ref": "#/$defs/plain" },
         "gist": { "$ref": "#/$defs/plainList" },
         "planQ": { "$ref": "#/$defs/plain" },
         "planOpts": { "$ref": "#/$defs/plainList" },
@@ -114,6 +116,37 @@
         "reset": { "$ref": "#/$defs/plain" },
         "resetAsk": { "$ref": "#/$defs/plain" },
         "finaleLink": { "$ref": "#/$defs/plain" },
+        "worldMeta": { "$ref": "#/$defs/plain" },
+        "mapLabel": { "$ref": "#/$defs/plain" },
+        "prevLabel": { "$ref": "#/$defs/plain" },
+        "keysHint": { "$ref": "#/$defs/plain" },
+        "progressLabel": { "$ref": "#/$defs/plain" },
+        "sources": {
+          "description": "the label for each source type, as plain text without HTML tags",
+          "type": "object",
+          "properties": {
+            "official": { "$ref": "#/$defs/plain" },
+            "study": { "$ref": "#/$defs/plain" },
+            "test": { "$ref": "#/$defs/plain" },
+            "vendor": { "$ref": "#/$defs/plain" },
+            "notes": { "$ref": "#/$defs/plain" }
+          },
+          "additionalProperties": false
+        },
+        "grades": {
+          "description": "the label for each evidence grade, as plain text without HTML tags",
+          "type": "object",
+          "properties": {
+            "strong": { "$ref": "#/$defs/plain" },
+            "moderate": { "$ref": "#/$defs/plain" },
+            "weak": { "$ref": "#/$defs/plain" },
+            "none": { "$ref": "#/$defs/plain" },
+            "against": { "$ref": "#/$defs/plain" }
+          },
+          "additionalProperties": false
+        },
+        "source": { "$ref": "#/$defs/plain" },
+        "skipped": { "$ref": "#/$defs/plain" },
         "tags": {
           "description": "the default tag for each card type, as plain text without HTML tags",
           "type": "object",

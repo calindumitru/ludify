@@ -11,13 +11,16 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build:example": "node scripts/build.ts ../../examples/adhd-learning-deck.json dist/adhd-learning-deck.html",
-    "autoplay": "npm run build:example && node scripts/autoplay.ts dist/adhd-learning-deck.html dist/shots",
+    "autoplay": "npm run build:example && npm run build:fixtures && node scripts/autoplay.ts dist/adhd-learning-deck.html dist/shots/example && node scripts/autoplay.ts dist/ro-deck.html dist/shots/ro && node scripts/autoplay.ts dist/hostile-deck.html dist/shots/hostile",
+    "build:fixtures": "node scripts/build.ts fixtures/ro-deck.json dist/ro-deck.html && node scripts/build.ts fixtures/hostile-deck.json dist/hostile-deck.html",
     "validate": "node scripts/validate.ts"
   },
   "devDependencies": {
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^22.20.5",
     "ajv": "^8.20.0",
     "esbuild": "^0.28.2",
+    "jsdom": "^30.1.3",
     "playwright": "^1.64.1",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
