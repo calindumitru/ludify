@@ -1,0 +1,143 @@
+{
+  "lang": "ro",
+  "ui": {
+    "title": "Cum învăț mai bine din ce citesc?",
+    "secsPerCard": 35,
+    "fullLink": "https://example.org/evidence",
+    "yes": ["Exact.", "Da!"],
+    "next": "Mai departe →",
+    "tags": { "info": "De știut", "decide": "Decizia ta" }
+  },
+  "worlds": [
+    {
+      "id": "why",
+      "c": "w1",
+      "title": "De ce e greu",
+      "mins": 3,
+      "tease": "Ce spun studiile.",
+      "badge": { "ico": "🧠", "name": "Cartograf" },
+      "recap": ["Recompensele târzii par mai mici.", "Memoria de lucru ține puțin.", "Scurtează drumul spre răsplată."],
+      "cards": [
+        {
+          "type": "big",
+          "h": "O recompensă târzie valorează mai puțin acum",
+          "big": "d = 0.43",
+          "src": "https://example.org/discounting"
+        },
+        {
+          "type": "info",
+          "tag": { "source": "study", "grade": "moderate" },
+          "h": "Memoria de lucru ține mai puțin deodată",
+          "p": ["Un paragraf lung costă mai mult.", "Pune ideea întâi."],
+          "more": "Meta-analize din 2012 și 2013.",
+          "src": "https://example.org/working-memory"
+        },
+        {
+          "type": "quiz",
+          "tag": "Adevărat sau fals",
+          "h": "Plictiseala și ADHD merg împreună.",
+          "opts": ["Adevărat", "Fals"],
+          "right": 0,
+          "why": "r = 0.40 în 18 studii.",
+          "src": "https://example.org/boredom"
+        }
+      ]
+    },
+    {
+      "id": "helps",
+      "c": "w2",
+      "title": "Ce ajută",
+      "mins": 3,
+      "tease": "Ce are dovezi.",
+      "badge": { "ico": "🛠️", "name": "Meșter" },
+      "recap": ["Întrebări mici ajută memoria."],
+      "cards": [
+        {
+          "type": "info",
+          "tag": { "source": "vendor", "grade": "weak" },
+          "h": "Aplicația promite 30% mai mult timp de lucru",
+          "src": "https://example.org/vendor-claim"
+        },
+        {
+          "type": "order",
+          "h": "Ordonează după tăria dovezilor",
+          "items": ["Răsplăți dese", "Întrebări de verificare", "Pauze"],
+          "shown": [2, 0, 1],
+          "why": "Răsplăți (puternic), întrebări (moderat), pauze (slab).",
+          "src": "https://example.org/evidence"
+        },
+        {
+          "type": "guess",
+          "h": "Cât de mare e efectul testării?",
+          "min": 0,
+          "max": 1.2,
+          "step": 0.05,
+          "start": 0.2,
+          "answer": 0.65,
+          "tol": 0.15,
+          "fmt": "g = {v:2}",
+          "why": "g = 0.61–0.70.",
+          "src": "https://example.org/testing-effect"
+        }
+      ]
+    },
+    {
+      "id": "myths",
+      "c": "w3",
+      "title": "Mituri",
+      "mins": 3,
+      "tease": "Ce nu ține.",
+      "badge": { "ico": "🔍", "name": "Detectiv" },
+      "recap": ["Fonturile speciale nu ajută."],
+      "cards": [
+        {
+          "type": "multi",
+          "h": "Care au fost testate cu participanți cu ADHD?",
+          "opts": ["Pomodoro", "Planuri dacă-atunci", "Întrebări de verificare", "Body doubling"],
+          "right": [1, 2],
+          "why": "Doar planurile și întrebările au studii.",
+          "src": "https://example.org/myths"
+        },
+        {
+          "type": "info",
+          "tag": { "source": "test", "grade": "none" },
+          "h": "Bionic Reading nu a crescut viteza de citire",
+          "src": "https://example.org/bionic"
+        },
+        {
+          "type": "info",
+          "kind": "limits",
+          "tag": { "source": "notes" },
+          "h": "Ce nu poate spune acest brief",
+          "p": "Niciun studiu nu a testat adulți cu ADHD citind documente."
+        }
+      ]
+    },
+    {
+      "id": "decide",
+      "c": "w4",
+      "title": "Decizia ta",
+      "mins": 2,
+      "tease": "Alegerile sunt ale tale.",
+      "badge": { "ico": "🧭", "name": "Decident" },
+      "recap": ["Ai ales ce ți se potrivește."],
+      "cards": [
+        {
+          "type": "decide",
+          "h": "Cum îți împarți lectura?",
+          "opts": ["Secțiuni scurte", "Cum vine"],
+          "lean": 0,
+          "after": ["Bine: o răsplată la fiecare secțiune.", "Merge, dar e mai greu."],
+          "short": "Lectura",
+          "src": "https://example.org/sections"
+        },
+        {
+          "type": "summary",
+          "h": "Alegerile tale",
+          "from": [["decide", 0]],
+          "xp": 20
+        }
+      ]
+    }
+  ]
+}

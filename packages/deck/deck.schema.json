@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/calindumitru/ludify/main/packages/deck/deck.schema.json",
+  "title": "Ludify deck",
+  "description": "A deck is data, never code. Rules this schema can't express (2 or 4 worlds, the decision world, the limits card, where summary.from points, indexes inside a card, 64 KB at most) are checked by validateDeck in src/validate.ts.",
+  "type": "object",
+  "required": ["lang", "worlds"],
+  "properties": {
+    "lang": {
+      "description": "the deck's language as a BCP 47 tag, such as \"en\", \"ro\" or \"pt-BR\"",
+      "$comment": "RFC 5646 langtag or private-use tag. Left out: the reserved 4- and 5-8-letter language subtags (none is registered) and the grandfathered tags such as i-klingon. Repeated variants or extension singletons are checked in code.",
+      "type": "string",
+      "pattern": "^(?:[A-Za-z]{2,3}(?:-[A-Za-z]{3}){0,3}(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|[0-9]{3}))?(?:-(?:[A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(?:-[0-9A-WY-Za-wy-z](?:-[A-Za-z0-9]{2,8})+)*(?:-[Xx](?:-[A-Za-z0-9]{1,8})+)?|[Xx](?:-[A-Za-z0-9]{1,8})+)$"
+    },
+    "ui": { "$ref": "#/$defs/ui" },
+    "worlds": {
+      "description": "a list of worlds: 2 for a quick deck, 4 for a thorough one",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/world" }
+    }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "text": {
+      "description": "text (Markdown-lite: **bold**, `code`, [text](https://…))",
+      "type": "string",
+      "minLength": 1
+    },
+    "texts": {
+      "description": "text, or a list of texts",
+      "anyOf": [
+        { "$ref": "#/$defs/text" },
+        { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+      ]
+    },
+    "textList": {
+      "description": "a list of texts",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/text" }
+    },
+    "options": {
+      "description": "2 to 4 options, each a text",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/text" }
+    },
+    "index": {
+      "description": "an index into the card's list, counting from 0",
+      "type": "integer",
+      "minimum": 0
+    },
+    "plain": {
+      "description": "plain text without HTML tags",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![\\s\\S]*<[A-Za-z/!?])"
+    },
+    "plainList": {
+      "description": "a list of plain texts without HTML tags",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/plain" }
+    },
+    "httpsUrl": {
+      "description": "an https URL",
+      "$comment": "The pattern needs a host; validateDeck also parses the URL and checks the scheme and host.",
+      "type": "string",
+      "pattern": "^https://[^\\s/?#@]+(?:[/?#][^\\s]*)?$"
+    },
+    "src": {
+      "description": "the source: an https URL, or {\"notes\": true} for a fact from the user's notes",
+      "anyOf": [
+        { "$ref": "#/$defs/httpsUrl" },
+        {
+          "type": "object",
+          "required": ["notes"],
+          "properties": { "notes": { "const": true } },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ui": {
+      "description": "the engine's strings in the deck's language; every key is optional and the engine's English fills the rest",
+      "type": "object",
+      "properties": {
+        "key": { "$ref": "#/$defs/plain" },
+        "docTitle": { "$ref": "#/$defs/plain" },
+        "kicker": { "$ref": "#/$defs/plain" },
+        "title": { "$ref": "#/$defs/plain" },
+        "lead": { "$ref": "#/$defs/plain" },
+        "gistTitle": { "$ref": "#/$defs/plain" },
+        "gist": { "$ref": "#/$defs/plainList" },
+        "planQ": { "$ref": "#/$defs/plain" },
+        "planOpts": { "$ref": "#/$defs/plainList" },
+        "planThen": { "$ref": "#/$defs/plain" },
+        "left": { "$ref": "#/$defs/plain" },
+        "allDoneShort": { "$ref": "#/$defs/plain" },
+        "secsPerCard": {
+          "description": "a whole number of seconds from 5 to 300",
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 300
+        },
+        "calmOn": { "$ref": "#/$defs/plain" },
+        "calmOff": { "$ref": "#/$defs/plain" },
+        "speak": { "$ref": "#/$defs/plain" },
+        "anyOrder": { "$ref": "#/$defs/plain" },
+        "resume": { "$ref": "#/$defs/plain" },
+        "fullLink": { "$ref": "#/$defs/httpsUrl" },
+        "fullText": { "$ref": "#/$defs/plain" },
+        "reset": { "$ref": "#/$defs/plain" },
+        "resetAsk": { "$ref": "#/$defs/plain" },
+        "finaleLink": { "$ref": "#/$defs/plain" },
+        "tags": {
+          "description": "the default tag for each card type, as plain text without HTML tags",
+          "type": "object",
+          "properties": {
+            "info": { "$ref": "#/$defs/plain" },
+            "big": { "$ref": "#/$defs/plain" },
+            "quiz": { "$ref": "#/$defs/plain" },
+            "guess": { "$ref": "#/$defs/plain" },
+            "order": { "$ref": "#/$defs/plain" },
+            "multi": { "$ref": "#/$defs/plain" },
+            "decide": { "$ref": "#/$defs/plain" },
+            "summary": { "$ref": "#/$defs/plain" }
+          },
+          "additionalProperties": false
+        },
+        "more": { "$ref": "#/$defs/plain" },
+        "next": { "$ref": "#/$defs/plain" },
+        "finishWorld": { "$ref": "#/$defs/plain" },
+        "lock": { "$ref": "#/$defs/plain" },
+        "undo": { "$ref": "#/$defs/plain" },
+        "yes": { "$ref": "#/$defs/plainList" },
+        "no": { "$ref": "#/$defs/plain" },
+        "close": { "$ref": "#/$defs/plain" },
+        "orderWas": { "$ref": "#/$defs/plain" },
+        "actual": { "$ref": "#/$defs/plain" },
+        "lean": { "$ref": "#/$defs/plain" },
+        "noted": { "$ref": "#/$defs/plain" },
+        "changeAny": { "$ref": "#/$defs/plain" },
+        "copy": { "$ref": "#/$defs/plain" },
+        "copied": { "$ref": "#/$defs/plain" },
+        "whyRight": { "$ref": "#/$defs/plain" },
+        "whyTried": { "$ref": "#/$defs/plain" },
+        "whyClose": { "$ref": "#/$defs/plain" },
+        "whyDecide": { "$ref": "#/$defs/plain" },
+        "whyRead": { "$ref": "#/$defs/plain" },
+        "badgeGot": { "$ref": "#/$defs/plain" },
+        "bonus": { "$ref": "#/$defs/plain" },
+        "again": { "$ref": "#/$defs/plain" },
+        "recapTitle": { "$ref": "#/$defs/plain" },
+        "nextWorld": { "$ref": "#/$defs/plain" },
+        "finaleBtn": { "$ref": "#/$defs/plain" },
+        "map": { "$ref": "#/$defs/plain" },
+        "finaleTitle": { "$ref": "#/$defs/plain" },
+        "badges": { "$ref": "#/$defs/plain" },
+        "minutes": { "$ref": "#/$defs/plain" },
+        "finaleText": { "$ref": "#/$defs/plain" },
+        "finaleNext": { "$ref": "#/$defs/plainList" }
+      },
+      "additionalProperties": false
+    },
+    "world": {
+      "type": "object",
+      "required": ["id", "c", "title", "mins", "tease", "badge", "recap", "cards"],
+      "properties": {
+        "id": {
+          "description": "a short id of lowercase letters, digits and dashes, unique in the deck",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+        },
+        "c": {
+          "description": "the world's colour: one of w1, w2, w3, w4",
+          "enum": ["w1", "w2", "w3", "w4"]
+        },
+        "title": { "$ref": "#/$defs/plain" },
+        "mins": {
+          "description": "the minutes the world takes, a whole number from 1 to 30",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "tease": { "$ref": "#/$defs/text" },
+        "badge": {
+          "description": "the world's badge: {\"ico\": one emoji, \"name\": plain text}",
+          "type": "object",
+          "required": ["ico", "name"],
+          "properties": {
+            "ico": { "type": "string", "minLength": 1, "maxLength": 16, "pattern": "^[^<>&\"'\\s]+$" },
+            "name": { "$ref": "#/$defs/plain" }
+          },
+          "additionalProperties": false
+        },
+        "recap": {
+          "description": "1 to 3 texts the reader should still know tomorrow",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/text" }
+        },
+        "cards": {
+          "description": "a list of cards",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/card" }
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "cardBase": {
+      "type": "object",
+      "required": ["type", "h"],
+      "properties": {
+        "h": {
+          "description": "the headline, which states the point",
+          "$ref": "#/$defs/text"
+        },
+        "p": { "description": "the body: text, or a list of paragraphs", "$ref": "#/$defs/texts" },
+        "ul": { "description": "a list of bullet points", "$ref": "#/$defs/textList" },
+        "more": { "description": "detail behind a tap: text, or a list of paragraphs", "$ref": "#/$defs/texts" }
+      }
+    },
+    "stringTag": {
+      "description": "a short label above the card, as text",
+      "$ref": "#/$defs/text"
+    },
+    "why": {
+      "description": "the explanation shown after the play, naming the number, the reason or the source",
+      "$ref": "#/$defs/text"
+    },
+    "sourceTag": {
+      "description": "the source tag: {\"source\": one of official, study, test, vendor, notes}, plus \"grade\" (strong, moderate, weak, none, against) when the card claims an effect",
+      "type": "object",
+      "required": ["source"],
+      "properties": {
+        "source": { "enum": ["official", "study", "test", "vendor", "notes"] },
+        "grade": { "enum": ["strong", "moderate", "weak", "none", "against"] }
+      },
+      "additionalProperties": false
+    },
+    "card": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "description": "the card type: one of info, big, quiz, guess, order, multi, decide, summary",
+          "enum": ["info", "big", "quiz", "guess", "order", "multi", "decide", "summary"]
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "info" } } }, "then": { "$ref": "#/$defs/info" } },
+        { "if": { "properties": { "type": { "const": "big" } } }, "then": { "$ref": "#/$defs/big" } },
+        { "if": { "properties": { "type": { "const": "quiz" } } }, "then": { "$ref": "#/$defs/quiz" } },
+        { "if": { "properties": { "type": { "const": "guess" } } }, "then": { "$ref": "#/$defs/guess" } },
+        { "if": { "properties": { "type": { "const": "order" } } }, "then": { "$ref": "#/$defs/order" } },
+        { "if": { "properties": { "type": { "const": "multi" } } }, "then": { "$ref": "#/$defs/multi" } },
+        { "if": { "properties": { "type": { "const": "decide" } } }, "then": { "$ref": "#/$defs/decide" } },
+        { "if": { "properties": { "type": { "const": "summary" } } }, "then": { "$ref": "#/$defs/summary" } }
+      ]
+    },
+    "info": {
+      "description": "One idea. Every info card needs a source tag and a src, except the limits card (kind: limits).",
+      "$ref": "#/$defs/cardBase",
+      "properties": {
+        "type": { "const": "info" },
+        "kind": {
+          "description": "\"limits\" on the one card that says what the brief can't tell the reader, or nothing",
+          "const": "limits"
+        },
+        "tag": { "$ref": "#/$defs/sourceTag" },
+        "src": { "$ref": "#/$defs/src" }
+      },
+      "if": { "required": ["kind"] },
+      "else": { "required": ["tag", "src"] },
+      "unevaluatedProperties": false
+    },
+    "big": {
+      "description": "One striking number, with its meaning in p.",
+      "$ref": "#/$defs/cardBase",
+      "properties": {
+        "type": { "const": "big" },
+        "tag": { "$ref": "#/$defs/stringTag" },
+        "big": { "description": "the number as text, such as \"d = 0.43\"", "$ref": "#/$defs/text" },
+        "src": { "$ref": "#/$defs/src" }
+      },
+      "required": ["big", "src"],
+      "unevaluatedProperties": false
+    },
+    "quiz": {
+      "description": "One right answer out of 2 to 4 options.",
+      "$ref": "#/$defs/cardBase",
+      "properties": {
+        "type": { "const": "quiz" },
+        "tag": { "$ref": "#/$defs/stringTag" },
+        "opts": { "$ref": "#/$defs/options" },
+        "right": { "description": "the index of the right option, counting from 0", "$ref": "#/$defs/index" },
+        "why": { "$ref": "#/$defs/why" },
+        "src": { "$ref": "#/$defs/src" }
+      },
+      "required": ["opts", "right", "why", "src"],
+      "unevaluatedProperties": false
+    },
+    "guess": {
+      "description": "Slide to estimate a number, then reveal it.",
+      "$ref": "#/$defs/cardBase",
+      "properties": {
+        "type": { "const": "guess" },
+        "tag": { "$ref": "#/$defs/stringTag" },
+        "min": { "description": "the slider's lowest value, a number", "type": "number" },
+        "max": { "description": "the slider's highest value, a number", "type": "number" },
+        "step": { "description": "the slider's step, a number above 0", "type": "number", "exclusiveMinimum": 0 },
+        "start": { "description": "where the slider starts, a number", "type": "number" },
+        "answer": { "description": "the real number", "type": "number" },
+        "tol": { "description": "how far off still counts as close, a number of 0 or more", "type": "number", "minimum": 0 },
+        "fmt": {
+          "description": "a number template with {v} or {v:N} (N decimals, 0 to 20), such as \"{v} min\" or \"g = {v:2}\"",
+          "type": "string",
+          "pattern": "\\{v(:([0-9]|1[0-9]|20))?\\}"
+        },
+        "why": { "$ref": "#/$defs/why" },
+        "src": { "$ref": "#/$defs/src" }
+      },
+      "required": ["min", "max", "step", "start", "answer", "tol", "why", "src"],
+      "unevaluatedProperties": false
+    },
+    "order": {
+      "description": "Put items in order.",
+      "$ref": "#/$defs/cardBase",
+      "properties": {
+        "type": { "const": "order" },
+        "tag": { "$ref": "#/$defs/stringTag" },
+        "items": {
+          "description": "2 to 6 items in the right order, each a text",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": { "$ref": "#/$defs/text" }
+        },
+        "shown": {
+          "description": "the display order, as a list of indexes into items counting from 0",
+          "type": "array",
+          "items": { "$ref": "#/$defs/index" }
+        },
+        "why": { "$ref": "#/$defs/why" },
+        "src": { "$ref": "#/$defs/src" }
+      },
+      "required": ["items", "shown", "why", "src"],
+      "unevaluatedProperties": false
+    },
+    "multi": {
+      "description": "Pick all that apply.",
+      "$ref": "#/$defs/cardBase",
+      "properties": {
+        "type": { "const": "multi" },
+        "tag": { "$ref": "#/$defs/stringTag" },
+        "opts": { "$ref": "#/$defs/options" },
+        "right": {
+          "description": "the indexes of every right option, counting from 0, each once",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/index" }
+        },
+        "why": { "$ref": "#/$defs/why" },
+        "src": { "$ref": "#/$defs/src" }
+      },
+      "required": ["opts", "right", "why", "src"],
+      "unevaluatedProperties": false
+    },
+    "decide": {
+      "description": "A decision that belongs to the reader: no right answer, and the pick is recorded.",
+      "$ref": "#/$defs/cardBase",
+      "properties": {
+        "type": { "const": "decide" },
+        "tag": { "$ref": "#/$defs/stringTag" },
+        "opts": { "$ref": "#/$defs/options" },
+        "lean": { "description": "the index of the option the research leans to, counting from 0", "$ref": "#/$defs/index" },
+        "after": { "description": "one text per option, shown after it's picked", "$ref": "#/$defs/textList" },
+        "short": { "description": "a short name for the decision, used in the summary", "$ref": "#/$defs/plain" },
+        "src": { "$ref": "#/$defs/src" }
+      },
+      "required": ["opts", "after", "short"],
+      "unevaluatedProperties": false
+    },
+    "summary": {
+      "description": "Collects the decide picks; the last card of the decision world.",
+      "$ref": "#/$defs/cardBase",
+      "properties": {
+        "type": { "const": "summary" },
+        "tag": { "$ref": "#/$defs/stringTag" },
+        "from": {
+          "description": "the decide cards to collect, as [world id, card index counting from 0] pairs",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "array",
+            "prefixItems": [{ "type": "string" }, { "type": "integer", "minimum": 0 }],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "xp": { "description": "the XP for reaching the summary, a whole number from 0 to 100", "type": "integer", "minimum": 0, "maximum": 100 }
+      },
+      "required": ["from", "xp"],
+      "unevaluatedProperties": false
+    }
+  }
+}

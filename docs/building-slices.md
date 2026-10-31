@@ -124,7 +124,8 @@ points at the code the owner saw and the build is checked against it.
 - **Run the app locally:** `npm run build:example -w @ludify/deck`, then open
   `packages/deck/dist/adhd-learning-deck.html` in a browser (a file, no
   server). Build any deck with
-  `node packages/deck/scripts/build.ts <deck.json> <out.html>`. Once a slice
+  `node packages/deck/scripts/build.ts <deck.json> <out.html>`, and validate one with
+  `node packages/deck/scripts/validate.ts <deck.json>`. Once a slice
   adds a server, it goes here; pick a non-default port.
 - **Docs a slice updates:** [SPEC.md](../SPEC.md) only where the issue says
   so, [GLOSSARY.md](../GLOSSARY.md) for new terms, and this section when a
