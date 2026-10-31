@@ -43,7 +43,7 @@ for (const scheme of ['light', 'dark'] as const) {
       else if (await p.$('#cr')) await p.$eval('#cr', (el: HTMLInputElement) => { el.value = el.max; el.dispatchEvent(new Event('input', { bubbles: true })); });
       else if (await p.$('[data-decide]')) await p.click('[data-decide="0"]');
       await p.waitForTimeout(450);
-      if (shots && scheme === 'light' && i === 1) await p.screenshot({ path: `${shots}/w${w}-card.png` });
+      if (shots && i === 1) await p.screenshot({ path: `${shots}/w${w}-card-${scheme}.png` });
       cards++;
       const label = (await p.textContent('#next')) ?? '';
       if (await p.$eval('#next', (el: HTMLButtonElement) => el.disabled)) { errs.push(`${scheme}: stuck on world ${w + 1}, card ${i + 1}`); break; }
