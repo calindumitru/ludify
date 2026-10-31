@@ -56,6 +56,13 @@ describe('deck-level errors leave no deck', () => {
     expect(errorsOf([])).toEqual(['The deck must be a JSON object with `lang` and `worlds`.']);
   });
 
+  it('accepts sound BCP 47 tags and rejects the rest', () => {
+    for (const lang of ['en', 'pt-BR', 'zh-Hant-TW', 'de-CH-1996', 'es-419', 'x-ludify', 'en-x-test', 'en-US-u-ca-gregory'])
+      expect(validateDeck(broken(quick, d => { d.lang = lang; })).ok, lang).toBe(true);
+    for (const lang of ['en-US-US', 'English', 'en-', 'en--US', 'e', 'en-x', 'de-1996-1996', 'en-a-bbb-a-ccc'])
+      expect(errorsOf(broken(quick, d => { d.lang = lang; }))[0], lang).toMatch(/^deck: `lang` must be the deck's language as a BCP 47 tag/);
+  });
+
   it('needs lang as a BCP 47 tag', () => {
     expect(errorsOf(broken(quick, d => { delete d.lang; }))).toEqual([
       'deck: `lang` is missing; add the deck\'s language as a BCP 47 tag, such as "en", "ro" or "pt-BR".',
@@ -133,12 +140,40 @@ describe('deck-level errors leave no deck', () => {
   });
 
   it('leaves no deck when a card the structure needs is broken', () => {
-    const decide = validateDeck(broken(quick, d => { delete d.worlds[1].cards[0].short; }));
-    expect(decide.deck).toBeNull();
-    expect(decide.errors).toEqual(['world 2, card 1: `short` is missing; add a short name for the decision, used in the summary.']);
+    const summary = validateDeck(broken(quick, d => { d.worlds[1].cards[2].xp = -1; }));
+    expect(summary.deck).toBeNull();
+    expect(summary.errors).toEqual(['world 2, card 3: `xp` must be the XP for reaching the summary, a whole number from 0 to 100.']);
     const limits = validateDeck(broken(quick, d => { d.worlds[0].cards[4].p = 3; }));
     expect(limits.deck).toBeNull();
     expect(limits.errors).toEqual(['world 1, card 5: `p` must be the body: text, or a list of paragraphs.']);
+  });
+
+  it('still checks the structure when a card is not an object', () => {
+    const noLimits = validateDeck(broken(quick, d => { d.worlds[0].cards.pop(); d.worlds[0].cards[1] = 'quiz'; }));
+    expect(noLimits.deck).toBeNull();
+    expect(noLimits.errors).toEqual([
+      'The deck has no limits card; add an `info` card with `kind: "limits"` as the last card of world 1, right before the decision world.',
+      'world 1, card 2: the card must be an object with `type` and `h`.',
+    ]);
+    const noSummary = validateDeck(broken(quick, d => { d.worlds[1].cards.pop(); d.worlds[0].cards[1] = null; }));
+    expect(noSummary.deck).toBeNull();
+    expect(noSummary.errors).toEqual([
+      'world 2: the decision world must end with one `summary` card; add it after the `decide` cards.',
+      'world 1, card 2: the card must be an object with `type` and `h`.',
+    ]);
+  });
+
+  it('never throws, whatever it is given', () => {
+    const cyclic: Json = { lang: 'en' };
+    cyclic.worlds = [cyclic];
+    const odd: unknown[] = [undefined, null, 1, 'x', [], {}, 10n, cyclic, { lang: 'en', worlds: [null] }, { lang: 'en', worlds: [{ cards: [null, 1, []] }] },
+      { lang: 'en', worlds: [{ cards: 'x' }, { cards: [{ type: 'summary', from: 'x' }] }] }, broken(quick, d => { d.worlds[1].cards[2].from = [[1, 'x']]; })];
+    for (const input of odd) {
+      const result = validateDeck(input);
+      expect(result.ok).toBe(false);
+      expect(result.deck).toBeNull();
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
   });
 
   it('leaves no deck when a world has no valid card left', () => {
@@ -200,6 +235,8 @@ describe('card errors drop only that card', () => {
     expect(one(d => { d.worlds[0].cards[1].src = 'Smith 2020 · [table](https://example.org)'; }).errors).toEqual([`world 1, card 2: \`src\` must be ${SRC}.`]);
     expect(one(d => { d.worlds[0].cards[1].src = { notes: false }; }).errors).toEqual([`world 1, card 2: \`src\` must be ${SRC}.`]);
     expect(one(d => { d.worlds[0].cards[1].src = 'https://example.org/a b'; }).errors).toEqual([`world 1, card 2: \`src\` must be ${SRC}.`]);
+    for (const src of ['https://#', 'https://', 'https:///path', 'https://?q', 'https://[::1', 'https://user@example.org'])
+      expect(one(d => { d.worlds[0].cards[1].src = src; }).errors, src).toEqual([`world 1, card 2: \`src\` must be ${SRC}.`]);
   });
 
   it('exempts only the limits card from src', () => {
@@ -238,13 +275,29 @@ describe('card errors drop only that card', () => {
     ]);
   });
 
-  it('checks decide cards in the decision world the same way, and they leave no deck', () => {
+  it('drops a broken decide card while another decision remains, and re-points the summary', () => {
+    const result = one(d => { delete d.worlds[1].cards[0].short; });
+    expect(result.errors).toEqual(['world 2, card 1: `short` is missing; add a short name for the decision, used in the summary.']);
+    expect(result.skipped.map(s => [s.world, s.card])).toEqual([[2, 1]]);
+    expect(result.deck).toEqual(broken(quick, d => { d.worlds[1].cards.splice(0, 1); d.worlds[1].cards[1].from = [['decide', 0]]; }));
+  });
+
+  it('checks decide cards for indexes too', () => {
     const result = one(d => { d.worlds[1].cards[0].lean = 3; d.worlds[1].cards[0].after.pop(); });
-    expect(result.deck).toBeNull();
     expect(result.errors).toEqual([
       'world 2, card 1: `lean` is 3, but the card has 3 options; use an index from 0 to 2.',
       'world 2, card 1: `after` has 2 texts for 3 options; give one per option.',
     ]);
+    expect(result.deck!.worlds[1].cards).toHaveLength(2);
+  });
+
+  it('leaves no deck when no decision is left', () => {
+    const none = one(d => { delete d.worlds[1].cards[0].short; delete d.worlds[1].cards[1].short; });
+    expect(none.deck).toBeNull();
+    expect(none.errors.at(-1)).toBe('world 2 has no valid `decide` card left; fix its decide cards.');
+    const uncollected = one(d => { delete d.worlds[1].cards[0].short; d.worlds[1].cards[2].from = [['decide', 0]]; });
+    expect(uncollected.deck).toBeNull();
+    expect(uncollected.errors.at(-1)).toBe('world 2, card 3: every card `from` points at was skipped; fix those decide cards.');
   });
 
   it('reports every broken field of a card, once each', () => {
@@ -270,6 +323,12 @@ describe('the ui block', () => {
     ]);
     expect(result.deck).toEqual(broken(thorough, d => { delete d.ui.next; }));
     expect(result.skipped).toEqual([]);
+  });
+
+  it('needs ui.fullLink to be an https URL with a host', () => {
+    const result = validateDeck(broken(thorough, d => { d.ui.fullLink = 'https://#'; }));
+    expect(result.errors).toEqual(['deck: `ui.fullLink` must be an https URL.']);
+    expect(result.deck!.ui).not.toHaveProperty('fullLink');
   });
 
   it('allows text that only mentions < and >', () => {

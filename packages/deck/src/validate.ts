@@ -87,10 +87,27 @@ function sentences(errors: OutputUnit[], place: (path: string[]) => Place | null
 
 const list = (n: number) => (n === 1 ? '0' : `0 to ${n - 1}`);
 
+// The schema's pattern only shapes a URL; this parses it.
+const isHttpsUrl = (s: string) => {
+  try { const u = new URL(s); return u.protocol === 'https:' && u.hostname !== ''; } catch { return false; }
+};
+
+// What the lang pattern can't see: a variant or an extension singleton used twice (RFC 5646 §2.2.5).
+const langRepeats = (tag: string) => {
+  const parts = tag.toLowerCase().split('-');
+  const end = parts.indexOf('x');
+  const subtags = parts.slice(1, end < 0 ? undefined : end);
+  const firstSingleton = subtags.findIndex(p => p.length === 1);
+  const variants = (firstSingleton < 0 ? subtags : subtags.slice(0, firstSingleton)).filter(p => p.length >= 5 || /^\d.{3}$/.test(p));
+  const singletons = subtags.filter(p => p.length === 1);
+  return new Set(variants).size < variants.length || new Set(singletons).size < singletons.length;
+};
+
 // Rules inside one card that the schema can't express: indexes that must exist, ranges that
 // must hold. Only run on a card that already matches the schema.
 function cardRules(c: Card, where: string): string[] {
   const errors: string[] = [];
+  if (typeof c.src === 'string' && !isHttpsUrl(c.src)) errors.push(`${where}: \`src\` must be ${describe(defs.src)}.`);
   const opts = c.opts as unknown[] | undefined;
   if (c.type === 'quiz' && (c.right as number) >= opts!.length)
     errors.push(`${where}: \`right\` is ${c.right}, but the card has ${opts!.length} options; use an index from ${list(opts!.length)}.`);
@@ -176,8 +193,18 @@ function structureRules(worlds: { id?: unknown; cards: Record<string, unknown>[]
 
 const bytes = (s: string) => new TextEncoder().encode(s).length;
 
+const fail = (error: string): DeckResult => ({ ok: false, errors: [error], deck: null, skipped: [] });
+
+// Never throws: whatever the input, the caller gets a result to show the model.
 export function validateDeck(json: unknown): DeckResult {
-  const fail = (error: string): DeckResult => ({ ok: false, errors: [error], deck: null, skipped: [] });
+  try {
+    return check(json);
+  } catch (e) {
+    return fail(`The deck couldn't be checked (${(e as Error)?.message ?? e}); send it again as a JSON object with \`lang\` and \`worlds\`.`);
+  }
+}
+
+function check(json: unknown): DeckResult {
   let text: string;
   try { text = typeof json === 'string' ? json : JSON.stringify(json) ?? ''; } catch { return fail('The deck must be JSON data.'); }
   const size = bytes(text);
@@ -210,10 +237,21 @@ export function validateDeck(json: unknown): DeckResult {
     } else deckErrors.push(...errs);
   }
   for (const errs of [...worldErrors.keys()].sort((a, b) => a - b).map(k => worldErrors.get(k)!)) deckErrors.push(...errs);
+  if (typeof input.lang === 'string' && langRepeats(input.lang))
+    deckErrors.push(`deck: \`lang\` must be ${describe(schema.properties.lang as Node)}, with no variant or extension used twice.`);
+  const ui = input.ui;
+  if (isObject(ui) && typeof ui.fullLink === 'string' && !badUi.has('fullLink') && !isHttpsUrl(ui.fullLink)) {
+    uiErrors.push(`deck: \`ui.fullLink\` must be ${describe(defs.httpsUrl)}.`);
+    badUi.add('fullLink');
+  }
 
   const rawWorlds = Array.isArray(input.worlds) ? input.worlds : [];
-  const worldsOk = rawWorlds.length > 0 && rawWorlds.every(w => isObject(w) && Array.isArray(w.cards) && w.cards.every(isObject));
-  if (worldsOk) deckErrors.push(...structureRules(rawWorlds as never));
+  // Structure is checked on every deck with worlds, broken cards and all: a card that isn't an
+  // object counts as a card of no type, so it can't hide a missing limits card or summary.
+  if (rawWorlds.length > 0) deckErrors.push(...structureRules(rawWorlds.map(w => ({
+    id: isObject(w) ? w.id : undefined,
+    cards: isObject(w) && Array.isArray(w.cards) ? w.cards.map(c => (isObject(c) ? c : {})) : [],
+  }))));
 
   // Cards: each checked on its own; a broken card is listed in `skipped` and left out.
   const cardErrors: string[] = [], skipped: SkippedCard[] = [];
@@ -240,14 +278,27 @@ export function validateDeck(json: unknown): DeckResult {
   const errors = [...new Set([...deckErrors, ...uiErrors]), ...cardErrors];
   if (deckErrors.length) return { ok: false, errors, deck: null, skipped };
 
-  // The structure can't lose the limits card or any card of the decision world, and every
-  // world needs a card left to play.
+  // A broken card is dropped only if what's left still has the structure: the limits card and
+  // the summary can't go, the decision world keeps at least one decide card, the summary still
+  // collects one, and every world keeps a card to play.
   const worlds = rawWorlds as World[];
-  const last = worlds.length - 1;
-  const structural = skipped.some(s => s.world - 1 === last || worlds[s.world - 1].cards[s.card - 1]?.kind === 'limits');
-  const emptied = worlds.map((_, wi) => wi).filter(wi => !keep[wi].some(Boolean));
-  for (const wi of emptied) errors.push(`world ${wi + 1} has no valid cards left; fix its cards.`);
-  if (structural || emptied.length) return { ok: false, errors, deck: null, skipped };
+  const last = worlds.length - 1, summaryAt = worlds[last].cards.length - 1;
+  const late: string[] = [];
+  const needed = skipped.some(s => worlds[s.world - 1].cards[s.card - 1]?.kind === 'limits' || (s.world - 1 === last && s.card - 1 === summaryAt));
+  for (const wi of worlds.keys()) if (!keep[wi].some(Boolean)) late.push(`world ${wi + 1} has no valid cards left; fix its cards.`);
+  if (!needed && !keep[last].some((k, ci) => k && worlds[last].cards[ci].type === 'decide'))
+    late.push(`world ${last + 1} has no valid \`decide\` card left; fix its decide cards.`);
+
+  // Drop skipped cards and keep summary.from pointing at the same decide cards.
+  const newIndex = worlds.map((_, wi) => { let n = 0; return keep[wi].map(k => (k ? n++ : -1)); });
+  const worldIndex = new Map(worlds.map((w, i) => [w.id, i]));
+  const from = needed ? [] : worlds[last].cards[summaryAt].from!
+    .map(([wid, ci]) => [wid, newIndex[worldIndex.get(wid)!][ci]] as [string, number])
+    .filter(([, ci]) => ci >= 0);
+  if (!needed && from.length === 0 && late.length === 0)
+    late.push(`world ${last + 1}, card ${summaryAt + 1}: every card \`from\` points at was skipped; fix those decide cards.`);
+  errors.push(...late);
+  if (needed || late.length) return { ok: false, errors, deck: null, skipped };
 
   const deck = structuredClone(input) as unknown as Deck;
   for (const key of badUi) {
@@ -255,14 +306,8 @@ export function validateDeck(json: unknown): DeckResult {
     if (sub) delete (deck.ui!.tags as Record<string, unknown> | undefined)?.[sub];
     else delete deck.ui![k];
   }
-  // Drop skipped cards and keep summary.from pointing at the same decide cards.
-  const newIndex = worlds.map((_, wi) => { let n = 0; return keep[wi].map(k => (k ? n++ : -1)); });
   deck.worlds.forEach((w, wi) => { w.cards = w.cards.filter((_, ci) => keep[wi][ci]); });
-  const summary = deck.worlds[last].cards.at(-1)!;
-  const worldIndex = new Map(deck.worlds.map((w, i) => [w.id, i]));
-  summary.from = summary.from!
-    .map(([wid, ci]) => [wid, newIndex[worldIndex.get(wid)!][ci]] as [string, number])
-    .filter(([, ci]) => ci >= 0);
+  deck.worlds[last].cards.at(-1)!.from = from;
 
   return { ok: errors.length === 0, errors, deck, skipped };
 }

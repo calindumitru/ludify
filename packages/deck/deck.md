@@ -93,5 +93,7 @@ Rules checked in code: 2 or 4 worlds; the last world is the decision world (`dec
 The result is `{ ok, errors, deck, skipped }`. Each error is one sentence naming the place
 (`world 2, card 3`), the field and the fix. A broken card is left out of `deck` and listed in
 `skipped`; a broken `ui` string is left out and the engine's English fills in. `deck` is `null`
-when the deck can't be played: a deck-level error, a broken card that the structure needs (the
-limits card, a card of the decision world), or a world with no valid card left.
+when the deck can't be played: a deck-level error, a broken limits card or summary, no valid
+`decide` card left in the decision world (or none left that the summary collects), or a world with
+no valid card left. When a `decide` card is dropped, `summary.from` is re-pointed at the cards that
+remain.
