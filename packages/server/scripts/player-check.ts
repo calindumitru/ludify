@@ -1,0 +1,93 @@
+// Plays ludify_render's result in the deck player inside a stand-in host (scripts/fake-host.ts),
+// in headless Chromium at phone width: the deck shows, a link goes through the host, a broken deck
+// shows a short note, and nothing errors or scrolls sideways. Screenshots: dist/shots/player/.
+// Usage: node scripts/player-check.ts   (run `npm run build` first)
+import { mkdir } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { build } from 'esbuild';
+import { chromium, type Frame } from 'playwright';
+import { brokenDeck, loadDeck } from './render-checks.ts';
+import { render } from '../src/server.ts';
+import { PLAYER_HTML } from '../src/player.gen.ts';
+
+const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
+const shots = here('../dist/shots/player');
+await mkdir(shots, { recursive: true });
+const harness = (await build({ entryPoints: [here('fake-host.ts')], bundle: true, format: 'iife', write: false, target: 'es2022' })).outputFiles[0].text;
+
+const WIDTH = 375;
+const errs: string[] = [];
+const browser = await chromium.launch();
+
+async function open(result: unknown, name: string) {
+  const page = await browser.newPage({ viewport: { width: WIDTH, height: 780 } });
+  page.on('pageerror', e => errs.push(`${name}: ${e.message}`));
+  page.on('console', m => { if (m.type() === 'error' && !/ERR_(INTERNET_DISCONNECTED|NAME_NOT_RESOLVED|CONNECTION)/.test(m.text())) errs.push(`${name}: ${m.text()}`); });
+  await page.setContent('<!doctype html><body style="margin:0"></body>');
+  await page.addScriptTag({ content: harness });
+  const t0 = Date.now();
+  await page.evaluate(([html, r, w]) => window.startHost(html as string, r as Record<string, unknown>, w as number), [PLAYER_HTML, result, WIDTH] as const);
+  await page.waitForFunction(() => document.querySelector('iframe')?.contentDocument?.readyState === 'complete');
+  const frame = page.frames()[1];
+  return { page, frame, t0 };
+}
+
+const sideways = async (frame: Frame, where: string) => {
+  // Measured once main's slide-in animations end (a card enters from 18 px to the right), as autoplay does.
+  const [sw, vw] = await frame.evaluate(async () => {
+    const moving = document.getAnimations().filter(a => (a.effect as KeyframeEffect | null)?.target?.closest('main'));
+    await Promise.race([Promise.all(moving.map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, 1000))]);
+    return [document.documentElement.scrollWidth, innerWidth];
+  });
+  if (sw > vw) errs.push(`${where}: scrolls sideways (${sw}px in ${vw}px)`);
+  return `${sw}/${vw}px`;
+};
+
+// A valid deck plays.
+const deck = await loadDeck('quick-deck.json');
+const ok = await render(deck);
+{
+  const { page, frame, t0 } = await open(ok, 'valid');
+  await frame.waitForSelector('.world', { timeout: 10_000 });
+  const ms = Date.now() - t0;
+  const worlds = await frame.locator('.world').count();
+  const title = await frame.locator('h1').first().innerText();
+  if (worlds !== deck.worlds.length) errs.push(`valid: ${worlds} world tiles, deck has ${deck.worlds.length}`);
+  if (!title.includes(deck.ui.title)) errs.push(`valid: title "${title}" is not the deck's "${deck.ui.title}"`);
+  const lang = await frame.$eval('html', el => el.lang);
+  if (lang !== deck.lang) errs.push(`valid: page lang "${lang}", deck "${deck.lang}"`);
+  const home = await sideways(frame, 'valid home');
+  await page.screenshot({ path: `${shots}/home.png` });
+
+  await frame.locator('.world').first().click();
+  const link = frame.locator('main a[href^="https:"]').first();
+  await link.waitFor();
+  const href = await link.getAttribute('href');
+  const card = await sideways(frame, 'valid first card');
+  await page.screenshot({ path: `${shots}/card.png` });
+  await link.click();
+  await page.waitForFunction(() => window.opened.length > 0, null, { timeout: 5000 }).catch(() => {});
+  const opened = await page.evaluate(() => window.opened);
+  if (opened[0] !== href) errs.push(`valid: link ${href} did not go through the host (opened: ${JSON.stringify(opened)})`);
+  console.log(`valid: ${worlds} worlds shown ${ms} ms after the host started; width home ${home}, card ${card}; link through host: ${opened[0] === href}`);
+  await page.close();
+}
+
+// A broken deck shows a short note, not a deck.
+{
+  const bad = await render(await brokenDeck());
+  const { page, frame } = await open(bad, 'invalid');
+  await frame.waitForFunction(() => /had problems/.test(document.getElementById('main')?.textContent ?? ''), null, { timeout: 10_000 })
+    .catch(() => errs.push('invalid: no note shown for a broken deck'));
+  if (await frame.locator('.world').count()) errs.push('invalid: a broken deck showed worlds');
+  await page.screenshot({ path: `${shots}/invalid.png` });
+  console.log(`invalid: note "${(await frame.locator('#main').innerText()).trim()}"`);
+  await page.close();
+}
+
+await browser.close();
+if (errs.length) {
+  console.error(`player check failed:\n- ${errs.join('\n- ')}`);
+  process.exit(1);
+}
+console.log(`player check passed; screenshots in ${shots}`);

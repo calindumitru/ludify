@@ -56,6 +56,11 @@ _Avoid_: Disclaimer, caveat card
 A deck's last world: only decision cards, then the summary card that sends the picks to the chat.
 _Avoid_: Final level, boss level
 
+**Deck player**:
+The page Ludify's server gives the host to show a deck inline: the deck engine plus a small bridge
+that takes the deck from `ludify_render`'s result. One page for every deck.
+_Avoid_: Widget, viewer
+
 **Source tag**:
 The label on an info card naming where its fact comes from (official, study, test, vendor, notes),
 plus an evidence grade when the card claims an effect.
