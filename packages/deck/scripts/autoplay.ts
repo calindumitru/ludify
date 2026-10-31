@@ -59,7 +59,11 @@ async function run(scheme: 'light' | 'dark') {
   p.on('pageerror', e => errs.push(`${scheme}: ${e.message}`));
   p.on('console', m => { if (m.type() === 'error' && !/ERR_(INTERNET_DISCONNECTED|NAME_NOT_RESOLVED|CONNECTION)/.test(m.text())) errs.push(`${scheme}: ${m.text()}`); });
   p.on('dialog', d => { errs.push(`${scheme}: a ${d.type()} dialog opened: ${d.message()}`); void d.dismiss(); });
-  const check = async (where: string) => { for (const x of await unsafeMarkup(p)) errs.push(`${scheme}, ${where}: ${x}`); };
+  const check = async (where: string) => {
+    for (const x of await unsafeMarkup(p)) errs.push(`${scheme}, ${where}: ${x}`);
+    const [sw, vw] = await p.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
+    if (sw > vw) errs.push(`${scheme}, ${where}: scrolls sideways (${sw}px wide in a ${vw}px window)`);
+  };
 
   await p.goto(pathToFileURL(path.resolve(file)).href);
   await p.waitForTimeout(1000);
