@@ -4,8 +4,10 @@ A deck is data: one JSON file with `ui` (strings) and `worlds` (the cards). The 
 (`src/shell.html` and `src/engine.js`: layout, card plays, rewards, saved progress) reads it from a
 `<script type="application/json" id="deck">` block, and `scripts/build.ts` writes the engine and the
 deck into one self-contained page. Nothing in a deck is ever run as code. Start from
-[examples/adhd-learning-deck.json](../../examples/adhd-learning-deck.json): it carries every `ui` key
-the engine reads.
+[fixtures/ro-deck.json](fixtures/ro-deck.json): a small valid deck in Romanian that translates every
+`ui` key the engine has. The English strings are in [src/ui.ts](src/ui.ts).
+[examples/adhd-learning-deck.json](../../examples/adhd-learning-deck.json) is a full deck, still in
+the old format.
 
 ## What the engine already does
 
@@ -20,6 +22,10 @@ Each of these maps to a row of `evidence.md`; keep them on.
 - Calm mode hides XP, toasts and confetti. Each card has read-aloud. ← → and 1–4 work on the
   keyboard, and the reader can swipe on touch. Reduced motion turns off all animation.
 - A play must be answered before Next unlocks. Reading cards never block.
+- The page takes the deck's `lang`, and every string the engine shows comes from `ui` (the deck's,
+  else the English default). Read-aloud picks the best voice the browser has for `lang`.
+- "Start over" asks inside the deck: the first tap turns the button into `resetAsk`, a second tap
+  within five seconds clears progress and XP. (`confirm()` is blocked in both hosts.)
 - XP: +20 for a quiz right first time, +5 for a wrong try, +25 for a close guess, +15 per decision,
   +50 and a badge per world. XP only ever comes after informational feedback, never instead of it.
 
@@ -40,20 +46,21 @@ new `--w5`/`--w5s` variables in the engine's CSS. Keep `mins` honest: about 35 s
 ## Cards
 
 Every card takes `h` (a headline of at most 12 words, which states the point), plus optional `tag`,
-`p` (a string or an array of strings), `ul`, `more` (detail behind a tap) and `src` (the source line,
-in Markdown). Inline Markdown works: `**bold**`, `` `code` ``, `[text](url)`.
+`p` (a string or an array of strings), `ul`, `more` (detail behind a tap) and `src` (an https URL,
+shown as "Source: site.org", or `{"notes": true}`). Text is Markdown-lite: `**bold**`, `` `code` ``
+and `[text](https://…)`. Nothing else is markup: HTML, other Markdown and links that aren't `https:`
+show as the text they are.
 
 | `type` | Extra fields | Use it for |
 |---|---|---|
-| `info` | none | One idea. Put the evidence grade in `tag` ("Strong evidence"). |
+| `info` | `tag` is a source tag: `{"source": "study", "grade": "moderate"}` | One idea. The tag shows as "Study · Moderate evidence"; a fact from the user's notes shows as "From your notes · unverified". |
 | `big` | `big` (the number) | One striking number with its meaning in `p`. |
 | `quiz` | `opts` (2–4), `right` (index), `why` | Retrieval after the card that taught it, or a prediction before the reveal. True/false is `opts: ['True','False']` with `tag: 'True or false'`. |
 | `guess` | `min`, `max`, `step`, `start`, `answer`, `tol`, `fmt` (a template: `"{v} min"`, `"€{v}"`, `"{v:2}"` for two decimals), `why` | Slide to estimate a number, then reveal it. Surprising numbers make the best ones. |
 | `order` | `items` (in the right order), `shown` (the display order, as indices), `why` | Ranking a priority order or a sequence. |
 | `multi` | `opts`, `right` (an array of indices), `why` | "Which of these…": status checks and myth sorting. |
-| `challenge` | `min`, `max`, `step`, `start`, `fmt(v)`, `calc(v)` → `{ win, cells: [[label, value, 'neg'\|'pos']] }`, `goalText`, `win`, `why` | Not playable from JSON (`calc` would be code); dropped in a later slice. Was: turning a model into a goal ("drag until it breaks even"). Use one per deck at most. |
-| `decide` | `opts`, `lean` (index of the recommendation), `after` (one line per option), `short`, `ticket` (URL) | Decisions that belong to the reader. There's no right answer, and the pick is recorded. |
-| `summary` | `from: [[worldId, cardIndex], …]`, `xp` | Collecting the `decide` picks into copyable text with their ticket links. |
+| `decide` | `opts`, `lean` (index of the recommendation), `after` (one line per option), `short` | Decisions that belong to the reader. There's no right answer, and the pick is recorded. |
+| `summary` | `from: [[worldId, cardIndex], …]`, `xp` | Collecting the `decide` picks into text, one line per decision. |
 
 `why` always explains: it names the number, the reason or the source. It never just says "correct".
 

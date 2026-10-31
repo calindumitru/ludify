@@ -119,8 +119,10 @@ points at the code the owner saw and the build is checked against it.
     `packages/deck/` (any path under that package);
   - full suite: `npm run typecheck && npm test && npm run autoplay`, which
     is what CI (`.github/workflows/ci.yml`) runs on every pull request and
-    on `main`. Autoplay builds the example deck and plays every card, light
-    and dark; its screenshots land in `packages/deck/dist/shots/`.
+    on `main`. Autoplay builds three decks (the example, a Romanian fixture
+    and a hostile fixture) and plays every card, light and dark, failing on
+    unsafe markup or a page wider than the phone; its screenshots land in
+    `packages/deck/dist/shots/<deck>/`.
 - **Run the app locally:** `npm run build:example -w @ludify/deck`, then open
   `packages/deck/dist/adhd-learning-deck.html` in a browser (a file, no
   server). Build any deck with

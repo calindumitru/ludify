@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import schema from '../deck.schema.json' with { type: 'json' };
 import ro from '../fixtures/ro-deck.json' with { type: 'json' };
 import { DEFAULT_UI, deckLang, fill, mergeUi } from './ui.ts';
 
@@ -65,5 +66,24 @@ describe('the Romanian fixture deck', () => {
       return typeof v === 'object' && !Array.isArray(v) ? Object.keys(v).filter(kk => (theirs as Record<string, unknown>)[kk] == null).map(kk => `${k}.${kk}`) : [];
     });
     expect(missing).toEqual([]);
+  });
+});
+
+describe('the deck schema', () => {
+  type Props = { properties: Record<string, Props | object> };
+  const ui = schema.$defs.ui as unknown as Props;
+  const keys = (props: Props['properties'], prefix = ''): string[] =>
+    Object.entries(props).flatMap(([k, v]) => ('properties' in v ? keys((v as Props).properties, `${prefix}${k}.`) : [`${prefix}${k}`]));
+  const engine = Object.entries(DEFAULT_UI).flatMap(([k, v]) => (typeof v === 'object' && !Array.isArray(v) ? Object.keys(v).map(kk => `${k}.${kk}`) : [k]));
+
+  it("accepts every string the engine has, so a deck can translate all of them", () => {
+    const schemaKeys = keys(ui.properties);
+    expect(engine.filter(k => !schemaKeys.includes(k))).toEqual([]);
+  });
+
+  it("names no engine string the engine doesn't have", () => {
+    // The deck's own words (title, gist, the start plan, the finale) live in ui too, and the engine reads them as they are.
+    const deckWords = ['key', 'docTitle', 'kicker', 'title', 'lead', 'gist', 'planQ', 'planOpts', 'planThen', 'secsPerCard', 'fullLink', 'fullText', 'finaleText', 'finaleNext'];
+    expect(keys(ui.properties).filter(k => !engine.includes(k) && !deckWords.includes(k))).toEqual([]);
   });
 });
