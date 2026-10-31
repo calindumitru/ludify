@@ -1,0 +1,93 @@
+{
+  "lang": "en",
+  "ui": {
+    "key": "ludify:heat-pump:2026-10-31",
+    "title": "Is a heat pump worth it for your house?",
+    "gist": ["**Running costs** depend on your electricity price.", "Most of the saving comes from insulation first."]
+  },
+  "worlds": [
+    {
+      "id": "costs",
+      "c": "w1",
+      "title": "What it costs",
+      "mins": 4,
+      "tease": "Prices, savings and what they depend on.",
+      "badge": { "ico": "💶", "name": "Cost Counter" },
+      "recap": ["Install costs vary by a factor of two.", "Savings depend on the electricity price.", "Insulate first."],
+      "cards": [
+        {
+          "type": "info",
+          "tag": { "source": "official" },
+          "h": "An air-source heat pump costs about €12,000 installed",
+          "p": "That's the median of quotes in the national installer survey.",
+          "src": "https://example.org/installer-survey-2026"
+        },
+        {
+          "type": "quiz",
+          "h": "What drives running costs most?",
+          "opts": ["The brand", "The electricity price", "The colour"],
+          "right": 1,
+          "why": "Electricity is most of the running cost.",
+          "src": "https://example.org/running-costs"
+        },
+        {
+          "type": "guess",
+          "h": "How efficient is a typical heat pump over a year?",
+          "min": 1,
+          "max": 6,
+          "step": 0.1,
+          "start": 2,
+          "answer": 3.2,
+          "tol": 0.4,
+          "fmt": "SCOP {v:1}",
+          "why": "Field trials measured a seasonal performance of about 3.2.",
+          "src": "https://example.org/field-trial"
+        },
+        {
+          "type": "info",
+          "tag": { "source": "notes" },
+          "h": "Your house was insulated in 2019",
+          "src": { "notes": true }
+        },
+        {
+          "type": "info",
+          "kind": "limits",
+          "h": "What this can't tell you",
+          "ul": ["Quotes for your street.", "Next year's electricity price."]
+        }
+      ]
+    },
+    {
+      "id": "decide",
+      "c": "w2",
+      "title": "Your decision",
+      "mins": 2,
+      "tease": "Two calls that are yours to make.",
+      "badge": { "ico": "🧭", "name": "Decider" },
+      "recap": ["You picked what fits your house."],
+      "cards": [
+        {
+          "type": "decide",
+          "h": "When do you get quotes?",
+          "opts": ["This month", "After insulating", "Not yet"],
+          "lean": 1,
+          "after": ["Get three.", "Insulation changes the size you need.", "Fine, revisit next year."],
+          "short": "Quotes"
+        },
+        {
+          "type": "decide",
+          "h": "Which type would you look at?",
+          "opts": ["Air-source", "Ground-source"],
+          "after": ["Cheaper to install.", "Better efficiency, needs land."],
+          "short": "Type"
+        },
+        {
+          "type": "summary",
+          "h": "Your picks",
+          "from": [["decide", 0], ["decide", 1]],
+          "xp": 20
+        }
+      ]
+    }
+  ]
+}

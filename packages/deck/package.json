@@ -3,19 +3,26 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/build.ts"
+    ".": "./src/build.ts",
+    "./validate": "./src/validate.ts",
+    "./deck.schema.json": "./deck.schema.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build:example": "node scripts/build.ts ../../examples/adhd-learning-deck.json dist/adhd-learning-deck.html",
-    "autoplay": "npm run build:example && node scripts/autoplay.ts dist/adhd-learning-deck.html dist/shots"
+    "autoplay": "npm run build:example && node scripts/autoplay.ts dist/adhd-learning-deck.html dist/shots",
+    "validate": "node scripts/validate.ts"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
+    "ajv": "^8.20.0",
     "esbuild": "^0.28.2",
     "playwright": "^1.64.1",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@cfworker/json-schema": "^4.1.4"
   }
 }
