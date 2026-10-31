@@ -42,6 +42,21 @@ of the Owner's funvenio repo) found nothing that does this:
 Users are the public: anyone with a Claude or ChatGPT account. Not only people with ADHD — the
 design helps everyone, but never claims to treat or be proven for ADHD (see §6).
 
+**Decided** (2026-10-30, [Who is Ludify for first?](https://github.com/calindumitru/ludify/issues/4)):
+
+- **First audience: decision-makers**, meaning adults researching something they have to decide (a purchase, a
+  treatment option, a career move, a tool). Research defaults are practical, the deck ends on the
+  decisions they face, and the example deck is a decision topic.
+- **Reach in v1:** Claude on every plan, Free included (as its one custom connector), plus the
+  ChatGPT plans that can add a server by URL (Business, Enterprise/Edu, Pro with read-only tools,
+  and Plus, which the spike showed can add one in the desktop app). ChatGPT Free and Go, and anything that needs a
+  directory listing, wait for a later launch effort.
+- **Desktop and web first.** On mobile the deck must still play; the narrowing questions may fall
+  back to plain text.
+- **Positioning:** the landing page leads with finishing the research you started. Lower down it
+  says Ludify is designed from the evidence on attention and learning, names ADHD there, and says it
+  isn't a treatment or proven for ADHD.
+
 ## 3. How it runs on the user's own usage
 
 Researched 2026-10-30. These programmes are weeks to months old; re-check before building.
@@ -134,14 +149,15 @@ Full table with sources: [docs/evidence.md](docs/evidence.md). In short:
 - Ludify calling models itself (no API keys, no model bill).
 - Uploading the user's own documents (a natural v2: "ludify this PDF").
 - Audio overviews, video, mind maps.
+- Visual card types (charts, graphs, flows, workflows, mind maps as cards): wanted for v2. They'd be
+  data the engine draws, never code, and only visuals that carry the content (decoration stays out).
 - A standalone web app with Sign in with ChatGPT.
 
 ## 8. Open questions (grill these first)
 
 1. **Which host first?** Claude, ChatGPT, or both at once through MCP Apps? (Test how each renders
    the UI and whether forms/tool calls from the iframe work in both.)
-2. **Who is it for first?** Students, knowledge workers, people with ADHD specifically, the Owner
-   and friends? This changes the landing page and the example deck.
+2. ~~**Who is it for first?**~~ **Decided:** decision-makers, desktop first; see §2.
 3. **Free forever or a business?** Hosting only costs a little; is there ever a paid tier, and what
    would it hold?
 4. **Where do the narrowing questions live?** In the host's own question UI, or a Ludify form
@@ -159,13 +175,19 @@ Full table with sources: [docs/evidence.md](docs/evidence.md). In short:
 
 ## 9. To verify before building
 
-- That an MCP App iframe can trigger the next step (call a tool, or post a message) in both hosts.
-- Size limits on tool inputs/outputs and UI resources (a deck is ~20–40 KB of JSON; the engine
-  ~40 KB of HTML).
-- That `localStorage` and the Web Speech API (read-aloud) work inside each host's sandboxed iframe;
-  if not, fall back gracefully.
-- That the host model actually uses web search during the research step on each plan tier.
-- Whether a downloaded HTML file can be offered from inside the iframe.
+**Checked** 2026-10-30 in the host spike
+([Spike: can ludify_render play the ADHD deck inline in both hosts?](https://github.com/calindumitru/ludify/issues/6),
+[findings](https://github.com/calindumitru/ludify/blob/prototype/host-spike/prototype-host-spike/FINDINGS.md)):
+
+- The iframe can call a tool and post a message in both hosts. Claude puts the message in the chat
+  box for the user to send; ChatGPT sends it at once.
+- Sizes: a model wrote a ~13 KB deck in one tool call in both hosts; a 623 KB app page loaded fine.
+- `localStorage` works in both (per chat in Claude, across chats in ChatGPT). Read-aloud works in both.
+- The host model used web search during the flow in Claude. Not yet seen in ChatGPT.
+- **No download from inside the iframe** in either host.
+- Also: `confirm()` is blocked in both; the clipboard is blocked in Claude and works in ChatGPT.
+
+Still unchecked: chatgpt.com in a browser, mobile in both hosts, and Claude Free's one-connector limit.
 
 ## 10. Milestones (proposed)
 
