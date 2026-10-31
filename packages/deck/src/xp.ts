@@ -7,7 +7,7 @@ export type Reward = { xp: number; why: Why };
 
 const isText = (x: unknown) => typeof x === 'string' && x.trim() !== '';
 const num = (x: unknown) => (Number.isFinite(Number(x)) ? Number(x) : 0);
-const of = (right: boolean, hit: number, miss: number): Reward =>
+const byCorrectness = (right: boolean, hit: number, miss: number): Reward =>
   (right ? { xp: hit, why: 'whyRight' } : { xp: miss, why: 'whyTried' });
 
 /**
@@ -19,18 +19,18 @@ export function reward(card: Record<string, unknown>, answer: unknown): Reward |
   if (answer == null) return null;
   switch (card.type) {
     case 'quiz':
-      return isText(card.why) ? of(answer === card.right, 20, 5) : null;
+      return isText(card.why) ? byCorrectness(answer === card.right, 20, 5) : null;
     case 'guess': {
       if (!isText(card.why)) return null;
       const close = Math.abs(num(answer) - num(card.answer)) <= num(card.tol);
       return close ? { xp: 25, why: 'whyClose' } : { xp: 10, why: 'whyTried' };
     }
     case 'order':
-      return isText(card.why) ? of(answer === 'right', 20, 5) : null;
+      return isText(card.why) ? byCorrectness(answer === 'right', 20, 5) : null;
     case 'multi': {
       if (!isText(card.why) || !Array.isArray(answer)) return null;
       const right = Array.isArray(card.right) ? card.right : [];
-      return of(answer.length === right.length && answer.every(i => right.includes(i)), 20, 8);
+      return byCorrectness(answer.length === right.length && answer.every(i => right.includes(i)), 20, 8);
     }
     case 'decide': {
       const after = Array.isArray(card.after) ? card.after : [];
