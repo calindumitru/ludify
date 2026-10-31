@@ -12,7 +12,6 @@
       "title": "What it costs",
       "mins": 4,
       "tease": "Prices, savings and what they depend on.",
-      "badge": { "ico": "💶", "name": "Cost Counter" },
       "recap": ["Install costs vary by a factor of two.", "Savings depend on the electricity price.", "Insulate first."],
       "cards": [
         {
@@ -63,7 +62,6 @@
       "title": "Your decision",
       "mins": 2,
       "tease": "Two calls that are yours to make.",
-      "badge": { "ico": "🧭", "name": "Decider" },
       "recap": ["You picked what fits your house."],
       "cards": [
         {
@@ -84,8 +82,7 @@
         {
           "type": "summary",
           "h": "Your picks",
-          "from": [["decide", 0], ["decide", 1]],
-          "xp": 20
+          "from": [["decide", 0], ["decide", 1]]
         }
       ]
     }

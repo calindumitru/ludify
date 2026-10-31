@@ -16,8 +16,6 @@
     "planThen": "Plan: {when}, deschid prima lume neterminată.",
     "fullLink": "https://jcsm.aasm.org/doi/10.5664/jcsm.4758",
     "fullText": "Recomandarea AASM",
-    "finaleText": "Știi acum de ce merită să dormi după ce înveți.",
-    "finaleNext": ["Citește [recomandarea AASM](https://jcsm.aasm.org/doi/10.5664/jcsm.4758)."],
 
     "gistTitle": "⚡ Versiunea de 60 de secunde",
     "gistOpen": "deschide ▾",
@@ -25,14 +23,13 @@
     "left": "{n} cartonașe rămase · ~{m} min",
     "allDoneShort": "Gata",
     "worldMeta": "Lumea {i} · {m} min",
-    "calmOn": "Mod calm: fără XP sau confetti",
-    "calmOff": "Arată XP și confetti",
+    "calmOn": "Mod calm: ascunde XP",
+    "calmOff": "Arată din nou XP",
     "speak": "Citește cartonașul cu voce tare",
     "anyOrder": "Joacă în orice ordine",
     "resume": "Continuă de unde ai rămas",
     "reset": "Ia-o de la capăt",
     "resetAsk": "Atinge din nou ca să ștergi progresul",
-    "finaleLink": "🏆 Vezi ecranul cu trofee",
     "map": "Hartă",
     "mapLabel": "Înapoi la hartă",
     "prevLabel": "Cartonașul anterior",
@@ -65,7 +62,7 @@
     "source": "Sursa",
     "more": "Spune-mi mai multe",
     "next": "Înainte →",
-    "finishWorld": "Termină lumea ★",
+    "finishWorld": "Termină lumea →",
     "lock": "Confirmă",
     "undo": "Anulează ultimul",
     "yes": ["Exact.", "Corect!", "Da!", "Perfect."],
@@ -83,22 +80,13 @@
     "whyTried": "pentru încercare",
     "whyClose": "estimare apropiată",
     "whyDecide": "decizie luată",
-    "whyRead": "gata",
-    "badgeGot": "Insignă deblocată: {b}",
-    "bonus": "+50 XP bonus pentru lume",
-    "again": "O aveai deja.",
-    "recapTitle": "Trei lucruri de păstrat",
-    "nextWorld": "Următoarea: {w} →",
-    "finaleBtn": "🏆 Termină",
-    "finaleTitle": "Ai terminat!",
-    "badges": "insigne",
-    "minutes": "minute"
+    "recapTitle": "De păstrat din lumea asta",
+    "nextWorld": "Următoarea: {w} →"
   },
   "worlds": [
     {
       "id": "stim", "c": "w1", "title": "Ce știm", "mins": 4,
       "tease": "Ce face somnul cu **memoria**.",
-      "badge": { "ico": "🌙", "name": "Paznicul somnului" },
       "recap": ["Somnul fixează amintirile noi.", "Cel puțin 7 ore pe noapte.", "Cafeina seara strică somnul."],
       "cards": [
         { "type": "info", "h": "Somnul fixează ce ai învățat ziua",
@@ -136,7 +124,6 @@
     {
       "id": "decizia", "c": "w4", "title": "Decizia ta", "mins": 2,
       "tease": "Două alegeri care îți aparțin.",
-      "badge": { "ico": "🧭", "name": "Cel care decide" },
       "recap": ["Învață lucrurile grele înainte de somn.", "Ține o oră fixă de culcare.", "Alegerile tale ajung în chat."],
       "cards": [
         { "type": "decide", "h": "Când înveți lucrurile grele?", "short": "Ora de studiu",
@@ -145,7 +132,7 @@
         { "type": "decide", "h": "Câte ore de somn îți propui?", "short": "Ținta de somn",
           "opts": ["7 ore", "8 ore", "Cât pot"], "lean": 0,
           "after": ["Minimul recomandat.", "Peste minim, cu rezervă.", "Fără țintă, e greu de ținut."] },
-        { "type": "summary", "h": "Alegerile tale", "from": [["decizia", 0], ["decizia", 1]], "xp": 10 }
+        { "type": "summary", "h": "Alegerile tale", "from": [["decizia", 0], ["decizia", 1]] }
       ]
     }
   ]

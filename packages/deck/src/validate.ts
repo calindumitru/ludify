@@ -228,7 +228,7 @@ function check(json: unknown): DeckResult {
     if ('world' in where) {
       if (where.rest[0] === 'cards' && where.rest.length > 1) continue; // checked per card below
       if (where.rest.length === 0 && e.keyword === 'type')
-        errs.push(`world ${where.world + 1}: the world must be an object with \`id\`, \`c\`, \`title\`, \`mins\`, \`tease\`, \`badge\`, \`recap\` and \`cards\`.`);
+        errs.push(`world ${where.world + 1}: the world must be an object with \`id\`, \`c\`, \`title\`, \`mins\`, \`tease\`, \`recap\` and \`cards\`.`);
       worldErrors.set(where.world, [...(worldErrors.get(where.world) ?? []), ...errs]);
     } else if (path[0] === 'ui' && path.length > 1) {
       if (errs.length === 0) continue;

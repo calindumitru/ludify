@@ -1,7 +1,7 @@
 # The deck format
 
 A deck is data: one JSON file with `ui` (strings) and `worlds` (the cards). The engine
-(`src/shell.html` and `src/engine.js`: layout, card plays, rewards, saved progress) reads it from a
+(`src/shell.html` and `src/engine.js`: layout, card plays, XP, saved progress) reads it from a
 `<script type="application/json" id="deck">` block, and `scripts/build.ts` writes the engine and the
 deck into one self-contained page. Nothing in a deck is ever run as code. Start from
 [fixtures/ro-deck.json](fixtures/ro-deck.json): a small valid deck in Romanian that translates every
@@ -19,26 +19,32 @@ Each of these maps to a row of `evidence.md`; keep them on.
   On phones it replaces the progress bar.
 - Progress saves to `localStorage` under `ui.key`, and the home screen offers "pick up where you
   stopped". Give each brief its own key.
-- Calm mode hides XP, toasts and confetti. Each card has read-aloud. ← → and 1–4 work on the
+- Calm mode hides XP and its toasts. Each card has read-aloud. ← → and 1–4 work on the
   keyboard, and the reader can swipe on touch. Reduced motion turns off all animation.
 - A play must be answered before Next unlocks. Reading cards never block.
 - The page takes the deck's `lang`, and every string the engine shows comes from `ui` (the deck's,
   else the English default). Read-aloud picks the best voice the browser has for `lang`.
 - "Start over" asks inside the deck: the first tap turns the button into `resetAsk`, a second tap
   within five seconds clears progress and XP. (`confirm()` is blocked in both hosts.)
-- XP: +20 for a quiz right first time, +5 for a wrong try, +25 for a close guess, +15 per decision,
-  +50 and a badge per world. XP only ever comes after informational feedback, never instead of it.
+- XP only ever follows an explanation: it comes with the feedback of an answered play whose card
+  shows why (`why`, or the picked option's `after` on a decide card), never for reading a card,
+  reaching the summary or finishing a world. +20 right first time (quiz, order, multi), +5 for a
+  wrong try (+8 on multi), +25 for a close guess (+10 otherwise), +15 per decision. The rule is
+  `reward()` in [src/xp.ts](src/xp.ts).
+- A world ends on its recap: its key points in three lines or fewer, then on to the next world.
+  The map shows a plain ✓ on each finished world. The deck ends on the `summary` card; there are
+  no collectibles, no end-of-deck reward screen and no celebration effects (`evidence.md` rows 13,
+  15 and 19).
 
 ## Worlds
 
 ```json
 { "id": "money", "c": "w2", "title": "Money", "mins": 4, "tease": "One line on what this world gives you.",
-  "badge": { "ico": "💰", "name": "Box Office" },
-  "recap": ["Three", "things", "to keep"],
+  "recap": ["One to three", "things", "to keep"],
   "cards": [] }
 ```
 
-`recap` is shown on the world-end card; `cards` holds 5–8 cards.
+`recap` (one to three texts) is shown when the world ends; `cards` holds 5–8 cards.
 
 `c` is `w1`–`w4`. Those are the four colours: give each world its own. More than four worlds needs
 new `--w5`/`--w5s` variables in the engine's CSS. Keep `mins` honest: about 35 seconds a card.
@@ -60,7 +66,7 @@ show as the text they are.
 | `order` | `items` (in the right order), `shown` (the display order, as indices), `why` | Ranking a priority order or a sequence. |
 | `multi` | `opts`, `right` (an array of indices), `why` | "Which of these…": status checks and myth sorting. |
 | `decide` | `opts`, `lean` (index of the recommendation), `after` (one line per option), `short` | Decisions that belong to the reader. There's no right answer, and the pick is recorded. |
-| `summary` | `from: [[worldId, cardIndex], …]`, `xp` | Collecting the `decide` picks into text, one line per decision. |
+| `summary` | `from: [[worldId, cardIndex], …]` | Collecting the `decide` picks into text, one line per decision. |
 
 `why` always explains: it names the number, the reason or the source. It never just says "correct".
 
@@ -70,8 +76,8 @@ show as the text they are.
   decisions, or the myths, whichever the brief builds towards.
 - Within a world, alternate: an `info` card, then a play that retrieves it or predicts the next one.
   Never put three `info` cards in a row.
-- Each world's `recap` gives exactly three lines: the things the reader should still know tomorrow.
-- Use emoji only as signals (the world's badge, one per tag). Leave decoration and images out.
+- Each world's `recap` gives three lines at most: the things the reader should still know tomorrow.
+- Use emoji only as signals (one per tag at most). Leave decoration and images out.
 
 ## Validation
 
@@ -90,7 +96,10 @@ What the schema adds to the tables above:
   one of `official`, `study`, `test`, `vendor`, `notes`, and `grade` (`strong`, `moderate`, `weak`,
   `none`, `against`) is there only when the card claims an effect. The limits card is
   `{"type": "info", "kind": "limits", ...}` and needs neither tag nor `src`.
-- No `challenge` cards, and no `ticket` on `decide`.
+- No `challenge` cards, and no `ticket` on `decide`. Older decks' reward fields are refused like
+  any unknown field: the world's collectible gets "world 1: `<field>` isn't a world field; remove
+  it.", and `xp` on `summary` gets "world 2, card 3: `xp` isn't a field of a summary card;
+  remove it."
 
 Rules checked in code: 2 or 4 worlds; the last world is the decision world (`decide` cards, then one
 `summary`); exactly one limits card, the last card of the world before it; `summary.from` points at

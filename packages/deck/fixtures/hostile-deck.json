@@ -12,8 +12,6 @@
     "planThen": "{when} <img src=x onerror=window.pwned=1>",
     "fullLink": "javascript:window.pwned=1",
     "fullText": "<img src=x onerror=window.pwned=1>",
-    "finaleText": "<script>window.pwned=1</script>",
-    "finaleNext": ["[x](https://example.org/\"onmouseover=\"window.pwned=1)"],
     "gistTitle": "<img src=x onerror=window.pwned=1>",
     "gistOpen": "\"><img src=x onerror=window.pwned=1>",
     "gistClose": "'); background: url(https://evil.invalid/g",
@@ -27,7 +25,6 @@
     "resume": "<img src=x onerror=window.pwned=1>",
     "reset": "<img src=x onerror=window.pwned=1>",
     "resetAsk": "<script>window.pwned=1</script> again",
-    "finaleLink": "<img src=x onerror=window.pwned=1>",
     "map": "<img src=x onerror=window.pwned=1>",
     "mapLabel": "\" onfocus=\"window.pwned=1",
     "prevLabel": "\" onfocus=\"window.pwned=1",
@@ -57,16 +54,8 @@
     "whyTried": "<img src=x onerror=window.pwned=1>",
     "whyClose": "<img src=x onerror=window.pwned=1>",
     "whyDecide": "<img src=x onerror=window.pwned=1>",
-    "whyRead": "<img src=x onerror=window.pwned=1>",
-    "badgeGot": "<img src=x onerror=window.pwned=1> {b}",
-    "bonus": "<img src=x onerror=window.pwned=1>",
-    "again": "<img src=x onerror=window.pwned=1>",
     "recapTitle": "<img src=x onerror=window.pwned=1>",
     "nextWorld": "<img src=x onerror=window.pwned=1> {w}",
-    "finaleBtn": "<img src=x onerror=window.pwned=1>",
-    "finaleTitle": "<img src=x onerror=window.pwned=1>",
-    "badges": "<img src=x onerror=window.pwned=1>",
-    "minutes": "<img src=x onerror=window.pwned=1>",
     "secsPerCard": "<img src=x onerror=window.pwned=1>"
   },
   "worlds": [
@@ -74,7 +63,6 @@
       "id": "__proto__", "c": "w1);background:url(https://evil.invalid/c);--x:(", "title": "<img src=x onerror=window.pwned=1>",
       "mins": "<img src=x onerror=window.pwned=1>",
       "tease": "<script>window.pwned=1</script>",
-      "badge": { "ico": "<img src=x onerror=window.pwned=1>", "name": "<img src=x onerror=window.pwned=1>" },
       "recap": ["<img src=x onerror=window.pwned=1>", "[x](javascript:window.pwned=1)", "**`<b>`**"],
       "cards": [
         { "type": "info", "h": "<img src=x onerror=window.pwned=1>",
@@ -108,7 +96,6 @@
     {
       "id": "decide", "c": "<img>", "title": "<img src=x onerror=window.pwned=1>", "mins": 1,
       "tease": "<img src=x onerror=window.pwned=1>",
-      "badge": { "ico": "<script>window.pwned=1</script>", "name": "\"><img src=x onerror=window.pwned=1>" },
       "recap": ["<img src=x onerror=window.pwned=1>"],
       "cards": [
         { "type": "decide", "h": "<img src=x onerror=window.pwned=1>", "short": "<img src=x onerror=window.pwned=1>",
@@ -116,7 +103,7 @@
           "after": ["<img src=x onerror=window.pwned=1>", "<img src=x onerror=window.pwned=1>"],
           "ticket": "javascript:window.pwned=1" },
         { "type": "summary", "h": "<img src=x onerror=window.pwned=1>",
-          "from": [["decide", 0], ["missing", 9], ["__proto__", 0], "<img>"], "xp": "<img>" }
+          "from": [["decide", 0], ["missing", 9], ["__proto__", 0], "<img>"] }
       ]
     }
   ]

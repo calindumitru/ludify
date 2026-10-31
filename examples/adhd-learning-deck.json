@@ -24,8 +24,8 @@
   "left": "{n} cards left · ~{m} min",
   "allDoneShort": "All done",
   "secsPerCard": 35,
-  "calmOn": "Calm mode: no XP or confetti",
-  "calmOff": "Show XP and confetti",
+  "calmOn": "Calm mode: hide XP",
+  "calmOff": "Show XP again",
   "speak": "Read this card aloud",
   "anyOrder": "Play in any order",
   "resume": "Pick up where you stopped",
@@ -33,7 +33,6 @@
   "fullText": "The evidence table",
   "reset": "Start over",
   "resetAsk": "Clear your progress and XP?",
-  "finaleLink": "🏆 See your trophy screen",
   "tags": {
    "info": "Know this",
    "big": "One number",
@@ -47,7 +46,7 @@
   },
   "more": "Tell me more",
   "next": "Next →",
-  "finishWorld": "Finish world ★",
+  "finishWorld": "Finish world →",
   "lock": "Lock it in",
   "undo": "Undo last",
   "yes": [
@@ -70,22 +69,9 @@
   "whyClose": "close guess",
   "whyWin": "challenge won",
   "whyDecide": "decision made",
-  "whyRead": "done",
-  "badgeGot": "Badge unlocked: {b}",
-  "bonus": "+50 XP world bonus",
-  "again": "You already had this one.",
-  "recapTitle": "Three things to keep",
+  "recapTitle": "To keep from this world",
   "nextWorld": "Next: {w} →",
-  "finaleBtn": "🏆 Finish",
-  "map": "Map",
-  "finaleTitle": "Brief cleared!",
-  "badges": "badges",
-  "minutes": "minutes",
-  "finaleText": "You now know more about ADHD and learning design than most of the apps marketed for it. This deck itself follows the rules it teaches.",
-  "finaleNext": [
-   "Every principle, graded by evidence, with its sources: [the evidence table](https://github.com/calindumitru/ludify/blob/main/docs/evidence.md).",
-   "How the tools compare: [the tools survey](https://github.com/calindumitru/ludify/blob/main/SPEC.md#why-it-should-exist)."
-  ]
+  "map": "Map"
  },
  "worlds": [
   {
@@ -94,10 +80,6 @@
    "title": "Why it's hard",
    "mins": 3,
    "tease": "What the research says is different, and what's a myth.",
-   "badge": {
-    "ico": "🧠",
-    "name": "Brain Mapper"
-   },
    "recap": [
     "**Later rewards feel worth less** with ADHD: delay discounting, d = 0.43, in adults as much as children.",
     "Boredom and ADHD go together (r = 0.40), and working memory holds less at once.",
@@ -177,10 +159,6 @@
    "title": "What helps",
    "mins": 4,
    "tease": "Seven design moves, each graded by its evidence.",
-   "badge": {
-    "ico": "🛠️",
-    "name": "Design Detective"
-   },
    "recap": [
     "**Short sections, one idea each, and a payoff at the end of each one.**",
     "**Feedback that explains why** beats points for finishing. Quiz questions with answers help memory.",
@@ -277,10 +255,6 @@
    "title": "Games and tools",
    "mins": 4,
    "tease": "Does gamification work, and what's already out there?",
-   "badge": {
-    "ico": "🎮",
-    "name": "Game Theorist"
-   },
    "recap": [
     "Games for ADHD move the trained task; real-life effects are small and shrink under blinding.",
     "**Streaks that show breaks backfire.** Gamification novelty fades after about four weeks.",
@@ -369,10 +343,6 @@
    "title": "Myth busters",
    "mins": 3,
    "tease": "The boss level: popular ADHD advice, true or false?",
-   "badge": {
-    "ico": "🧨",
-    "name": "Myth Buster"
-   },
    "recap": [
     "Bionic Reading, dyslexia fonts and colour overlays: no better than plain text.",
     "Fidget spinners hurt attention; ordinary movement is a different thing.",

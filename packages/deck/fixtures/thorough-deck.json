@@ -15,7 +15,6 @@
       "title": "De ce e greu",
       "mins": 3,
       "tease": "Ce spun studiile.",
-      "badge": { "ico": "🧠", "name": "Cartograf" },
       "recap": ["Recompensele târzii par mai mici.", "Memoria de lucru ține puțin.", "Scurtează drumul spre răsplată."],
       "cards": [
         {
@@ -49,7 +48,6 @@
       "title": "Ce ajută",
       "mins": 3,
       "tease": "Ce are dovezi.",
-      "badge": { "ico": "🛠️", "name": "Meșter" },
       "recap": ["Întrebări mici ajută memoria."],
       "cards": [
         {
@@ -87,7 +85,6 @@
       "title": "Mituri",
       "mins": 3,
       "tease": "Ce nu ține.",
-      "badge": { "ico": "🔍", "name": "Detectiv" },
       "recap": ["Fonturile speciale nu ajută."],
       "cards": [
         {
@@ -119,7 +116,6 @@
       "title": "Decizia ta",
       "mins": 2,
       "tease": "Alegerile sunt ale tale.",
-      "badge": { "ico": "🧭", "name": "Decident" },
       "recap": ["Ai ales ce ți se potrivește."],
       "cards": [
         {
@@ -134,8 +130,7 @@
         {
           "type": "summary",
           "h": "Alegerile tale",
-          "from": [["decide", 0]],
-          "xp": 20
+          "from": [["decide", 0]]
         }
       ]
     }

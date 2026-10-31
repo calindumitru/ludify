@@ -87,8 +87,8 @@ describe('the deck schema', () => {
   });
 
   it("names no engine string the engine doesn't have", () => {
-    // The deck's own words (title, gist, the start plan, the finale) live in ui too, and the engine reads them as they are.
-    const deckWords = ['key', 'docTitle', 'kicker', 'title', 'lead', 'gist', 'planQ', 'planOpts', 'planThen', 'secsPerCard', 'fullLink', 'fullText', 'finaleText', 'finaleNext'];
+    // The deck's own words (title, gist, the start plan) live in ui too, and the engine reads them as they are.
+    const deckWords = ['key', 'docTitle', 'kicker', 'title', 'lead', 'gist', 'planQ', 'planOpts', 'planThen', 'secsPerCard', 'fullLink', 'fullText'];
     expect(keys(ui.properties).filter(k => !engine.includes(k) && !deckWords.includes(k))).toEqual([]);
   });
 });

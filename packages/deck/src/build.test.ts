@@ -49,4 +49,15 @@ describe('packages/deck source', () => {
     expect(files.length).toBeGreaterThan(3);
     for (const f of files) expect(await readFile(path.join(pkg, f), 'utf8'), f).not.toMatch(CODE_FROM_TEXT);
   });
+
+  it('names none of the rewards the evidence rules out (issue #34)', async () => {
+    // Built from parts so this file does not match its own scan; the validator's tests name the old world field to turn it down.
+    const rewards = new RegExp(['bad' + 'ge', 'tro' + 'phy', 'me' + 'dal', 'con' + 'fetti'].join('|'), 'i');
+    const files = (await readdir(pkg, { recursive: true }))
+      .filter(f => !f.startsWith('node_modules') && !f.startsWith('dist') && /\.(ts|js|html|json|md)$/.test(f) && f !== path.join('src', 'validate.test.ts'));
+    expect(files.length).toBeGreaterThan(10);
+    const hits: string[] = [];
+    for (const f of files) if (rewards.test(await readFile(path.join(pkg, f), 'utf8'))) hits.push(f);
+    expect(hits).toEqual([]);
+  });
 });

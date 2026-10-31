@@ -7,6 +7,7 @@ import { formatValue } from './format.ts';
 import { escapeHtml as esc, httpsUrl, linkHtml, renderMarkdown as md } from './markdown.ts';
 import { deckLang, fill, mergeUi } from './ui.ts';
 import { pickVoice } from './voice.ts';
+import { reward } from './xp.ts';
 
 (() => {
   const Q = JSON.parse(document.getElementById('deck').textContent);
@@ -20,16 +21,15 @@ import { pickVoice } from './voice.ts';
   // Progress maps are keyed by world ids from the deck, so they have no prototype: an id like
   // "__proto__" is then just a key.
   const dict = m => Object.assign(Object.create(null), isMap(m) ? m : {});
-  const fresh = s => ({ calm: !!s.calm, plan: Number.isInteger(s.plan) ? s.plan : null, xp: num(s.xp), done: dict(s.done), ans: dict(s.ans), badges: dict(s.badges), start: num(s.start, Date.now()), view: 'home', w: 0, c: 0, dir: 1, tmp: {} });
+  const fresh = s => ({ calm: !!s.calm, plan: Number.isInteger(s.plan) ? s.plan : null, xp: num(s.xp), done: dict(s.done), ans: dict(s.ans), view: 'home', w: 0, c: 0, dir: 1, tmp: {} });
   const S = fresh(saved);
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ calm: S.calm, plan: S.plan, xp: S.xp, done: S.done, ans: S.ans, badges: S.badges, start: S.start, at: [S.w, S.c] })); } catch {} };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ calm: S.calm, plan: S.plan, xp: S.xp, done: S.done, ans: S.ans, at: [S.w, S.c] })); } catch {} };
   // Plain text from the ui block, escaped; `vars` fill its {slots} first.
   const T = (key, vars) => esc(vars ? fill(U[key], vars) : U[key]);
   const label = (map, key) => (typeof key === 'string' && Object.hasOwn(map, key) && typeof map[key] === 'string' ? map[key] : typeof key === 'string' ? key : '');
   const list = x => (Array.isArray(x) ? x : x == null ? [] : [x]);
   const show = (c, v) => formatValue(typeof c.fmt === 'string' ? c.fmt : undefined, v);
   const colour = (w, i) => (/^w[1-4]$/.test(w.c) ? w.c : `w${i % 4 + 1}`);
-  const ico = w => esc(w.badge?.ico);
   const id = (w, c) => W[w].id + ':' + c;
   const total = W.reduce((a, w) => a + w.cards.length, 0);
   const doneCount = () => Object.keys(S.done).length;
@@ -46,25 +46,20 @@ import { pickVoice } from './voice.ts';
   document.querySelector('.prog').setAttribute('aria-label', String(U.progressLabel));
   if ('speechSynthesis' in window) speechSynthesis.getVoices(); // starts the voice list loading
 
-  // ---------- rewards ----------
+  // ---------- XP ----------
+  // XP only ever follows an explanation: reward() gives it for an answered play whose card shows
+  // why, and nothing for reading a card or finishing a world.
   function award(n, why) {
     S.xp += n; save(); drawBar(true);
     if (S.calm) return;
     const t = document.createElement('div'); t.className = 'toast'; t.textContent = `+${n} XP · ${why}`;
     document.body.appendChild(t); setTimeout(() => t.remove(), 1500);
   }
-  function confetti() {
-    if (reduced || S.calm) return;
-    const box = document.createElement('div'); box.className = 'confetti';
-    const cols = ['var(--w1)', 'var(--w2)', 'var(--w3)', 'var(--w4)', 'var(--gold)'];
-    for (let i = 0; i < 70; i++) { const p = document.createElement('i'); p.style.left = Math.random() * 100 + '%'; p.style.background = cols[i % 5]; p.style.animationDelay = Math.random() * .4 + 's'; p.style.transform = `rotate(${Math.random() * 180}deg)`; box.appendChild(p); }
-    document.body.appendChild(box); setTimeout(() => box.remove(), 2300);
-  }
-  function complete(w, c, xp, why) {
+  function complete(w, c, r) {
     const k = id(w, c);
     if (S.done[k]) return;
     S.done[k] = 1;
-    if (xp) award(xp, why); else { save(); drawBar(); }
+    if (r) award(r.xp, U[r.why]); else { save(); drawBar(); }
   }
   function drawBar(pop) {
     document.getElementById('prog').style.width = (doneCount() / total * 100) + '%';
@@ -86,7 +81,6 @@ import { pickVoice } from './voice.ts';
     S.view = 'home'; document.getElementById('nav').hidden = true;
     document.body.style.removeProperty('--wc');
     const resume = Array.isArray(saved.at) && doneCount() > 0 && doneCount() < total;
-    const allDone = W.every((_, w) => worldDone(w));
     const opts = list(U.planOpts);
     const planned = S.plan != null && opts[S.plan] != null;
     const fullLink = httpsUrl(U.fullLink) && U.fullText ? ` · ${linkHtml(U.fullLink, esc(U.fullText))}` : '';
@@ -97,19 +91,19 @@ import { pickVoice } from './voice.ts';
       <div class="worlds">${W.map((w, i) => {
         const n = w.cards.filter((_, c) => S.done[id(i, c)]).length, wc = colour(w, i);
         return `<button class="world ${worldDone(i) ? 'done' : ''}" data-world="${i}" style="--wc:var(--${wc});--ws:var(--${wc}s)">
-          <span class="badge-ico" aria-hidden="true">${ico(w)}</span>
+          ${worldDone(i) ? '<span class="tick" aria-hidden="true">✓</span>' : ''}
           <span class="n">${T('worldMeta', { i: i + 1, m: num(w.mins) })}</span><span class="t">${esc(w.title)}</span><span class="d">${md(w.tease)}</span>
           <span class="meta"><i style="--p:${n / w.cards.length * 100}%"></i>${n}/${w.cards.length}</span></button>`;
       }).join('')}</div>
-      <div class="shelf">${resume ? `<button data-act="resume" style="font-weight:700;color:var(--ink)">${T('resume')} →</button> · ` : ''}${allDone ? `<button data-act="finale" style="font-weight:700;color:var(--ink)">${T('finaleLink')}</button> · ` : ''}<span>${T('anyOrder')}</span> · <button data-act="calm" aria-pressed="${S.calm}">${S.calm ? T('calmOff') : T('calmOn')}</button>${fullLink} · <button data-act="reset">${T('reset')}</button></div>`;
+      <div class="shelf">${resume ? `<button data-act="resume" style="font-weight:700;color:var(--ink)">${T('resume')} →</button> · ` : ''}<span>${T('anyOrder')}</span> · <button data-act="calm" aria-pressed="${S.calm}">${S.calm ? T('calmOff') : T('calmOn')}</button>${fullLink} · <button data-act="reset">${T('reset')}</button></div>`;
     drawBar(); scrollTo(0, 0);
   }
 
   // ---------- card ----------
   const P = {};
   const playable = c => Object.hasOwn(P, c.type);
-  // Reading cards never block Next; neither does a card type this engine doesn't play.
-  const reading = c => !playable(c) || c.type === 'info' || c.type === 'big';
+  // Reading cards (the summary too) never block Next; neither does a card type this engine doesn't play.
+  const reading = c => !playable(c) || c.type === 'info' || c.type === 'big' || c.type === 'summary';
   function card() {
     S.view = 'card'; S.tmp = {};
     const w = W[S.w], c = w.cards[S.c], k = id(S.w, S.c), wc = colour(w, S.w);
@@ -118,11 +112,11 @@ import { pickVoice } from './voice.ts';
     const isLast = S.c === w.cards.length - 1;
     const dots = w.cards.map((_, i) => `<i class="${S.done[id(S.w, i)] ? 'seen' : ''} ${i === S.c ? 'now' : ''}"></i>`).join('');
     document.getElementById('main').innerHTML = `
-      <div class="where"><span class="w">${ico(w)} ${esc(w.title)} · ${S.c + 1}/${w.cards.length}</span><span class="dots" aria-hidden="true">${dots}</span>${'speechSynthesis' in window ? `<span class="tools"><button data-act="speak" aria-label="${T('speak')}">🔊</button></span>` : ''}</div>
+      <div class="where"><span class="w">${esc(w.title)} · ${S.c + 1}/${w.cards.length}</span><span class="dots" aria-hidden="true">${dots}</span>${'speechSynthesis' in window ? `<span class="tools"><button data-act="speak" aria-label="${T('speak')}">🔊</button></span>` : ''}</div>
       <article class="card ${S.dir < 0 ? 'back' : ''}" id="card" aria-live="polite">${play(c, k)}</article>`;
     document.getElementById('next').textContent = isLast ? U.finishWorld : U.next;
     gate();
-    if (reading(c)) complete(S.w, S.c, 0);
+    if (reading(c)) complete(S.w, S.c, null);
     save(); scrollTo(0, 0);
   }
   const play = (c, k) => (playable(c) ? P[c.type] : P.info)(c, k);
@@ -209,41 +203,27 @@ import { pickVoice } from './voice.ts';
     return head(c) + body(c) + `<div class="opts">${opts}</div>` + (a != null ? fb('info', U.noted, list(c.after)[a] || U.changeAny) : '') + more(c);
   };
   // summary: the picks from the decide cards it names, as plain text.
-  P.summary = (c, k) => {
+  P.summary = c => {
     const lines = list(c.from).map(ref => {
       const [wk, ci] = list(ref), wi = W.findIndex(w => w.id === wk), cc = W[wi]?.cards[ci];
       if (!cc) return null;
       const a = S.ans[id(wi, ci)], opt = Number.isInteger(a) ? list(cc.opts)[a] : null;
       return `${cc.short ?? cc.h}: ${opt == null ? U.skipped : String(opt).replace(/\*\*/g, '')}`;
     }).filter(x => x != null).join('\n');
-    if (!S.done[k]) setTimeout(() => { complete(S.w, S.c, num(c.xp), U.whyRead); gate(); }, 400);
     return head(c) + body(c) + `<div class="picks" id="picks">${esc(lines)}</div><button class="go" data-act="copy">${T('copy')}</button>` + more(c);
   };
   const pick = arr => { const a = list(arr); return a[Math.floor(Math.random() * a.length)]; };
 
-  // ---------- world end and finale ----------
+  // ---------- world end ----------
+  // The world's key points (its recap, three lines at most), then on to the next world. The deck
+  // ends on the summary card, so after the last world there is only the map.
   function worldEnd() {
     S.view = 'end';
-    const w = W[S.w], first = !S.badges[w.id];
-    if (first) { S.badges[w.id] = 1; S.xp += 50; save(); setTimeout(() => { confetti(); drawBar(true); }, 50); }
-    const next = W.findIndex((_, i) => !worldDone(i));
+    const w = W[S.w], next = W.findIndex((_, i) => !worldDone(i));
     document.getElementById('nav').hidden = true;
-    document.getElementById('main').innerHTML = `<article class="card"><div class="medal"><span class="ico">${ico(w)}</span></div>
-      <h2 style="text-align:center">${T('badgeGot', { b: w.badge?.name ?? '' })}</h2>
-      <p style="text-align:center;color:var(--muted)">${first ? T('bonus') : T('again')}</p>
-      <div class="kicker">${T('recapTitle')}</div><ul class="recap">${list(w.recap).map(r => `<li>${md(r)}</li>`).join('')}</ul>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap">${next >= 0 ? `<button class="go" data-world="${next}">${T('nextWorld', { w: W[next].title })}</button>` : `<button class="go" data-act="finale">${T('finaleBtn')}</button>`}<button class="go" data-act="home" style="background:var(--bg);color:var(--ink);border:1px solid var(--line)">◎ ${T('map')}</button></div></article>`;
-    scrollTo(0, 0);
-  }
-  function finale() {
-    S.view = 'end'; document.getElementById('nav').hidden = true; confetti();
-    document.body.style.setProperty('--wc', 'var(--w1)');
-    const mins = Math.max(1, Math.round((Date.now() - S.start) / 60000));
-    document.getElementById('main').innerHTML = `<article class="card"><div class="medal"><span class="ico">${W.map(ico).join(' ')}</span></div>
-      <h2 style="text-align:center">${T('finaleTitle')}</h2>
-      <div class="stats"><div><b>${num(S.xp)}</b><small>XP</small></div><div><b>${Object.keys(S.badges).length}/${W.length}</b><small>${T('badges')}</small></div><div><b>${mins > 600 ? '—' : mins}</b><small>${T('minutes')}</small></div></div>
-      ${U.finaleText ? `<p>${md(U.finaleText)}</p>` : ''}${U.finaleNext ? `<ul>${list(U.finaleNext).map(x => `<li>${md(x)}</li>`).join('')}</ul>` : ''}
-      <button class="go" data-act="home">◎ ${T('map')}</button></article>`;
+    document.getElementById('main').innerHTML = `<article class="card"><div class="kicker">${T('recapTitle')}</div>
+      <h2>${esc(w.title)}</h2><ul class="recap">${list(w.recap).slice(0, 3).map(r => `<li>${md(r)}</li>`).join('')}</ul>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">${next >= 0 ? `<button class="go" data-world="${next}">${T('nextWorld', { w: W[next].title })}</button>` : ''}<button class="go" data-act="home" style="background:var(--bg);color:var(--ink);border:1px solid var(--line)">◎ ${T('map')}</button></div></article>`;
     scrollTo(0, 0);
   }
 
@@ -306,7 +286,6 @@ import { pickVoice } from './voice.ts';
     if (d.act === 'home') return home();
     if (d.act === 'next') return go(1);
     if (d.act === 'prev') return go(-1);
-    if (d.act === 'finale') return finale();
     if (d.act === 'calm') { S.calm = !S.calm; save(); return home(); }
     if (d.plan != null) { S.plan = +d.plan; save(); return home(); }
     if (d.act === 'speak') return speak();
@@ -316,18 +295,18 @@ import { pickVoice } from './voice.ts';
       S.w = w; S.c = ci; S.dir = 1; return card();
     }
     if (d.act === 'reset') return askReset(el);
-    if (d.quiz != null && S.ans[k] == null) { S.ans[k] = +d.quiz; complete(S.w, S.c, +d.quiz === c.right ? 20 : 5, +d.quiz === c.right ? U.whyRight : U.whyTried); return redraw(); }
-    if (d.act === 'lock') { const v = +document.getElementById('gr').value; S.ans[k] = v; const close = Math.abs(v - num(c.answer)) <= num(c.tol); complete(S.w, S.c, close ? 25 : 10, close ? U.whyClose : U.whyTried); return redraw(); }
+    if (d.quiz != null && S.ans[k] == null) { S.ans[k] = +d.quiz; complete(S.w, S.c, reward(c, S.ans[k])); return redraw(); }
+    if (d.act === 'lock') { S.ans[k] = +document.getElementById('gr').value; complete(S.w, S.c, reward(c, S.ans[k])); return redraw(); }
     if (d.order != null && !S.ans[k]) {
       const seq = S.tmp.seq || (S.tmp.seq = []); const i = +d.order;
       if (!seq.includes(i)) seq.push(i);
-      if (seq.length === list(c.items).length) { const right = seq.every((x, j) => x === j); S.ans[k] = right ? 'right' : 'shown'; complete(S.w, S.c, right ? 20 : 5, right ? U.whyRight : U.whyTried); }
+      if (seq.length === list(c.items).length) { S.ans[k] = seq.every((x, j) => x === j) ? 'right' : 'shown'; complete(S.w, S.c, reward(c, S.ans[k])); }
       return redraw();
     }
     if (d.act === 'undo-order') { (S.tmp.seq || []).pop(); return redraw(); }
     if (d.multi != null && !S.ans[k]) { const sel = S.tmp.sel || (S.tmp.sel = []); const i = +d.multi; sel.includes(i) ? sel.splice(sel.indexOf(i), 1) : sel.push(i); return redraw(); }
-    if (d.act === 'lock-multi') { const sel = S.tmp.sel.slice(), right = list(c.right); S.ans[k] = sel; const exact = sel.length === right.length && sel.every(i => right.includes(i)); complete(S.w, S.c, exact ? 20 : 8, exact ? U.whyRight : U.whyTried); return redraw(); }
-    if (d.decide != null) { const first = S.ans[k] == null; S.ans[k] = +d.decide; if (first) complete(S.w, S.c, 15, U.whyDecide); else save(); return redraw(); }
+    if (d.act === 'lock-multi') { S.ans[k] = S.tmp.sel.slice(); complete(S.w, S.c, reward(c, S.ans[k])); return redraw(); }
+    if (d.decide != null) { const first = S.ans[k] == null; S.ans[k] = +d.decide; if (first) complete(S.w, S.c, reward(c, S.ans[k])); else save(); return redraw(); }
     if (d.act === 'copy') {
       const t = document.getElementById('picks').textContent;
       const ok = () => { el.textContent = U.copied; setTimeout(() => el.textContent = U.copy, 1500); };
