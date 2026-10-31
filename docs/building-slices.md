@@ -108,15 +108,24 @@ points at the code the owner saw and the build is checked against it.
 
 ## Repo-specific
 
-Nothing is built yet: the first slice
-([Move the deck engine in and play the example deck from JSON](https://github.com/calindumitru/ludify/issues))
-sets up the workspace and CI and **fills in the commands below**. Until then a
-line marked *(first slice sets this)* has no command yet.
-
 - **Default branch:** `main`.
-- **Install and test:** Node 22, npm workspaces. *(first slice sets this:
-  install, typecheck, one test file, full suite.)*
-- **Run the app locally:** *(first slice sets this.)* Pick a non-default port.
+- **Install and test:** Node 22 (22.18 or later: scripts are TypeScript run
+  by `node` directly), npm workspaces under `packages/`. All from the repo
+  root:
+  - install: `npm ci`, then `npx playwright install chromium` once per
+    machine for autoplay;
+  - typecheck: `npm run typecheck`;
+  - one test file: `npx vitest run src/format.test.ts` from
+    `packages/deck/` (any path under that package);
+  - full suite: `npm run typecheck && npm test && npm run autoplay`, which
+    is what CI (`.github/workflows/ci.yml`) runs on every pull request and
+    on `main`. Autoplay builds the example deck and plays every card, light
+    and dark; its screenshots land in `packages/deck/dist/shots/`.
+- **Run the app locally:** `npm run build:example -w @ludify/deck`, then open
+  `packages/deck/dist/adhd-learning-deck.html` in a browser (a file, no
+  server). Build any deck with
+  `node packages/deck/scripts/build.ts <deck.json> <out.html>`. Once a slice
+  adds a server, it goes here; pick a non-default port.
 - **Docs a slice updates:** [SPEC.md](../SPEC.md) only where the issue says
   so, [GLOSSARY.md](../GLOSSARY.md) for new terms, and this section when a
   command changes.

@@ -1,0 +1,16 @@
+{
+  "name": "ludify",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm test --workspaces --if-present",
+    "autoplay": "npm run autoplay --workspace @ludify/deck"
+  }
+}
