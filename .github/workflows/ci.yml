@@ -28,7 +28,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run autoplay
       - if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: autoplay-shots
           path: packages/deck/dist/shots/
