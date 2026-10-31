@@ -82,12 +82,24 @@ describe('deck-level errors leave no deck', () => {
   });
 
   it('needs every world field', () => {
-    const result = validateDeck(broken(quick, d => { d.worlds[0].c = 'w5'; delete d.worlds[0].badge; }));
+    const result = validateDeck(broken(quick, d => { d.worlds[0].c = 'w5'; delete d.worlds[0].recap; }));
     expect(result.deck).toBeNull();
     expect(result.errors).toEqual([
-      'world 1: `badge` is missing; add the world\'s badge: {"ico": one emoji, "name": plain text}.',
+      'world 1: `recap` is missing; add the world\'s key points, shown when the world ends: 1 to 3 texts the reader should still know tomorrow.',
       'world 1: `c` must be the world\'s colour: one of w1, w2, w3, w4.',
     ]);
+  });
+
+  it('turns down a world with a badge: Ludify gives none', () => {
+    const result = validateDeck(broken(quick, d => { d.worlds[0].badge = { ico: '💶', name: 'Cost Counter' }; }));
+    expect(result.deck).toBeNull();
+    expect(result.errors).toEqual(["world 1: `badge` isn't a world field; remove it."]);
+  });
+
+  it('turns down XP on the summary card: reaching a card earns none', () => {
+    const result = validateDeck(broken(quick, d => { d.worlds[1].cards[2].xp = 20; }));
+    expect(result.deck).toBeNull();
+    expect(result.errors).toEqual(["world 2, card 3: `xp` isn't a field of a summary card; remove it."]);
   });
 
   it('needs each world id once', () => {
@@ -140,9 +152,9 @@ describe('deck-level errors leave no deck', () => {
   });
 
   it('leaves no deck when a card the structure needs is broken', () => {
-    const summary = validateDeck(broken(quick, d => { d.worlds[1].cards[2].xp = -1; }));
+    const summary = validateDeck(broken(quick, d => { d.worlds[1].cards[2].from = []; }));
     expect(summary.deck).toBeNull();
-    expect(summary.errors).toEqual(['world 2, card 3: `xp` must be the XP for reaching the summary, a whole number from 0 to 100.']);
+    expect(summary.errors).toEqual(['world 2, card 3: `from` must be the decide cards to collect, as [world id, card index counting from 0] pairs.']);
     const limits = validateDeck(broken(quick, d => { d.worlds[0].cards[4].p = 3; }));
     expect(limits.deck).toBeNull();
     expect(limits.errors).toEqual(['world 1, card 5: `p` must be the body: text, or a list of paragraphs.']);

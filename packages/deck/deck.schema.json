@@ -115,7 +115,6 @@
         "fullText": { "$ref": "#/$defs/plain" },
         "reset": { "$ref": "#/$defs/plain" },
         "resetAsk": { "$ref": "#/$defs/plain" },
-        "finaleLink": { "$ref": "#/$defs/plain" },
         "worldMeta": { "$ref": "#/$defs/plain" },
         "mapLabel": { "$ref": "#/$defs/plain" },
         "prevLabel": { "$ref": "#/$defs/plain" },
@@ -181,25 +180,15 @@
         "whyTried": { "$ref": "#/$defs/plain" },
         "whyClose": { "$ref": "#/$defs/plain" },
         "whyDecide": { "$ref": "#/$defs/plain" },
-        "whyRead": { "$ref": "#/$defs/plain" },
-        "badgeGot": { "$ref": "#/$defs/plain" },
-        "bonus": { "$ref": "#/$defs/plain" },
-        "again": { "$ref": "#/$defs/plain" },
         "recapTitle": { "$ref": "#/$defs/plain" },
         "nextWorld": { "$ref": "#/$defs/plain" },
-        "finaleBtn": { "$ref": "#/$defs/plain" },
-        "map": { "$ref": "#/$defs/plain" },
-        "finaleTitle": { "$ref": "#/$defs/plain" },
-        "badges": { "$ref": "#/$defs/plain" },
-        "minutes": { "$ref": "#/$defs/plain" },
-        "finaleText": { "$ref": "#/$defs/plain" },
-        "finaleNext": { "$ref": "#/$defs/plainList" }
+        "map": { "$ref": "#/$defs/plain" }
       },
       "additionalProperties": false
     },
     "world": {
       "type": "object",
-      "required": ["id", "c", "title", "mins", "tease", "badge", "recap", "cards"],
+      "required": ["id", "c", "title", "mins", "tease", "recap", "cards"],
       "properties": {
         "id": {
           "description": "a short id of lowercase letters, digits and dashes, unique in the deck",
@@ -218,18 +207,8 @@
           "maximum": 30
         },
         "tease": { "$ref": "#/$defs/text" },
-        "badge": {
-          "description": "the world's badge: {\"ico\": one emoji, \"name\": plain text}",
-          "type": "object",
-          "required": ["ico", "name"],
-          "properties": {
-            "ico": { "type": "string", "minLength": 1, "maxLength": 16, "pattern": "^[^<>&\"'\\s]+$" },
-            "name": { "$ref": "#/$defs/plain" }
-          },
-          "additionalProperties": false
-        },
         "recap": {
-          "description": "1 to 3 texts the reader should still know tomorrow",
+          "description": "the world's key points, shown when the world ends: 1 to 3 texts the reader should still know tomorrow",
           "type": "array",
           "minItems": 1,
           "maxItems": 3,
@@ -435,10 +414,9 @@
             "minItems": 2,
             "maxItems": 2
           }
-        },
-        "xp": { "description": "the XP for reaching the summary, a whole number from 0 to 100", "type": "integer", "minimum": 0, "maximum": 100 }
+        }
       },
-      "required": ["from", "xp"],
+      "required": ["from"],
       "unevaluatedProperties": false
     }
   }
