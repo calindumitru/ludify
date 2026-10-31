@@ -1,0 +1,473 @@
+{
+ "ui": {
+  "key": "ludify:adhd-learning:v1",
+  "docTitle": "What actually keeps ADHD brains reading",
+  "kicker": "Research brief · ADHD and learning material · 30 Oct 2026",
+  "title": "What actually keeps {ADHD brains} reading",
+  "lead": "Fifty-six sources, boiled down to cards. Four worlds in any order, about 15 minutes. Each card says how strong its evidence is, because a lot of popular ADHD advice has none.",
+  "gistTitle": "⚡ The 60-second version",
+  "gist": [
+   "**Why it's hard:** later rewards feel worth less (delay discounting, d = 0.43), boredom bites harder, and working memory holds less.",
+   "**What helps:** short sections with a payoff each, feedback that explains, low-stakes quiz questions, clear headings and summaries, and nothing decorative.",
+   "**Games:** points and badges as the engine have no evidence for ADHD reading. Streaks that show breaks backfire.",
+   "**Myths:** Bionic Reading, dyslexia fonts, fidget spinners and \"dopamine hits\" don't hold up.",
+   "**The catch:** no study has tested adults with ADHD reading documents. These are careful inferences."
+  ],
+  "planQ": "Quick plan, if you like: when will you play the first world?",
+  "planOpts": [
+   "Right now",
+   "After my next coffee",
+   "Before lunch",
+   "Tonight"
+  ],
+  "planThen": "Plan: {when}, I open the first world I haven't finished. One world, 3–4 minutes. (That's an if-then plan: card 6 of \"What helps\" says why.)",
+  "left": "{n} cards left · ~{m} min",
+  "allDoneShort": "All done",
+  "secsPerCard": 35,
+  "calmOn": "Calm mode: no XP or confetti",
+  "calmOff": "Show XP and confetti",
+  "speak": "Read this card aloud",
+  "anyOrder": "Play in any order",
+  "resume": "Pick up where you stopped",
+  "fullLink": "https://github.com/calindumitru/ludify/blob/main/docs/evidence.md",
+  "fullText": "The evidence table",
+  "reset": "Start over",
+  "resetAsk": "Clear your progress and XP?",
+  "finaleLink": "🏆 See your trophy screen",
+  "tags": {
+   "info": "Know this",
+   "big": "One number",
+   "quiz": "Quick quiz",
+   "guess": "Guess",
+   "order": "Put in order",
+   "multi": "Pick all that apply",
+   "challenge": "Challenge",
+   "decide": "Your call",
+   "summary": "Your picks"
+  },
+  "more": "Tell me more",
+  "next": "Next →",
+  "finishWorld": "Finish world ★",
+  "lock": "Lock it in",
+  "undo": "Undo last",
+  "yes": [
+   "Nailed it.",
+   "Spot on.",
+   "Yes!",
+   "Exactly."
+  ],
+  "no": "Not quite. Here's the answer:",
+  "close": "Close. The full answer:",
+  "orderWas": "Here's the real order:",
+  "actual": "The real number: {v}.",
+  "lean": "research leans",
+  "noted": "Noted.",
+  "changeAny": "You can change it any time.",
+  "copy": "Copy",
+  "copied": "Copied ✓",
+  "whyRight": "right first try",
+  "whyTried": "for trying",
+  "whyClose": "close guess",
+  "whyWin": "challenge won",
+  "whyDecide": "decision made",
+  "whyRead": "done",
+  "badgeGot": "Badge unlocked: {b}",
+  "bonus": "+50 XP world bonus",
+  "again": "You already had this one.",
+  "recapTitle": "Three things to keep",
+  "nextWorld": "Next: {w} →",
+  "finaleBtn": "🏆 Finish",
+  "map": "Map",
+  "finaleTitle": "Brief cleared!",
+  "badges": "badges",
+  "minutes": "minutes",
+  "finaleText": "You now know more about ADHD and learning design than most of the apps marketed for it. This deck itself follows the rules it teaches.",
+  "finaleNext": [
+   "Every principle, graded by evidence, with its sources: [the evidence table](https://github.com/calindumitru/ludify/blob/main/docs/evidence.md).",
+   "How the tools compare: [the tools survey](https://github.com/calindumitru/ludify/blob/main/SPEC.md#why-it-should-exist)."
+  ]
+ },
+ "worlds": [
+  {
+   "id": "hard",
+   "c": "w1",
+   "title": "Why it's hard",
+   "mins": 3,
+   "tease": "What the research says is different, and what's a myth.",
+   "badge": {
+    "ico": "🧠",
+    "name": "Brain Mapper"
+   },
+   "recap": [
+    "**Later rewards feel worth less** with ADHD: delay discounting, d = 0.43, in adults as much as children.",
+    "Boredom and ADHD go together (r = 0.40), and working memory holds less at once.",
+    "Attention doesn't fade fast: the gap is there from minute one, so **shorten the wait for a payoff**, not the reading."
+   ],
+   "cards": [
+    {
+     "type": "big",
+     "tag": "Strong evidence",
+     "h": "With ADHD, a reward later is worth less now",
+     "big": "d = 0.43",
+     "p": "Across 25 comparisons and 3,913 people, people with ADHD discount delayed rewards more steeply. Adults (0.40) and children (0.47) don't differ.",
+     "more": "This is the most solid reason to put a small payoff at the end of every short section, instead of one big payoff at the end of the document.",
+     "src": "Jackson & MacKillop 2016 · [evidence table](https://github.com/calindumitru/ludify/blob/main/docs/evidence.md)"
+    },
+    {
+     "type": "quiz",
+     "h": "How strongly do boredom and ADHD go together?",
+     "opts": [
+      "Not at all",
+      "Weakly (r ≈ 0.1)",
+      "Moderately (r ≈ 0.4)",
+      "Almost perfectly (r ≈ 0.9)"
+     ],
+     "right": 2,
+     "why": "r = 0.40 across 18 studies and 22,365 people. Boredom isn't a character flaw here; it's a measured pattern.",
+     "src": "Muris et al. 2026 · [evidence table](https://github.com/calindumitru/ludify/blob/main/docs/evidence.md)"
+    },
+    {
+     "type": "quiz",
+     "tag": "True or false",
+     "h": "With ADHD, attention collapses after a few minutes of reading.",
+     "opts": [
+      "True",
+      "False"
+     ],
+     "right": 1,
+     "why": "False. Across 47 studies the attention gap is large overall, but it barely grows over time: it's there from the start. So the fix is a near payoff, not just shorter text.",
+     "src": "[evidence table](https://github.com/calindumitru/ludify/blob/main/docs/evidence.md), the core mechanism and myths"
+    },
+    {
+     "type": "info",
+     "tag": "Moderate evidence",
+     "h": "Working memory holds less at once",
+     "p": "Meta-analyses find clear working-memory deficits in ADHD. A long paragraph that needs you to hold five ideas before the point arrives costs more.",
+     "ul": [
+      "One idea per section.",
+      "Put the point first, then the detail.",
+      "Keep what you need on screen, not in your head."
+     ],
+     "src": "Kasper et al. 2012 · Alderson et al. 2013"
+    },
+    {
+     "type": "quiz",
+     "h": "Do rewards work better for people with ADHD?",
+     "opts": [
+      "Yes, much better, every time",
+      "Somewhat, and immediate ones are preferred, but the findings are mixed",
+      "No, rewards don't work for ADHD"
+     ],
+     "right": 1,
+     "why": "Reinforcement improves performance somewhat more in ADHD (22 studies, 1,181 children), and children with ADHD prefer immediate rewards. But physiologically they seem less sensitive, and results are inconsistent.",
+     "src": "Luman et al. 2005, 2010"
+    },
+    {
+     "type": "info",
+     "tag": "The catch",
+     "h": "Nobody has tested adults with ADHD reading documents",
+     "p": "No controlled study looked at adults with ADHD and a self-paced document or e-learning course. Everything in \"What helps\" combines ADHD findings (mostly from children) with learning-design research on everyone.",
+     "more": "So treat the advice as well-informed, not proven. The grades on each card say how far each step is from direct evidence."
+    }
+   ]
+  },
+  {
+   "id": "helps",
+   "c": "w3",
+   "title": "What helps",
+   "mins": 4,
+   "tease": "Seven design moves, each graded by its evidence.",
+   "badge": {
+    "ico": "🛠️",
+    "name": "Design Detective"
+   },
+   "recap": [
+    "**Short sections, one idea each, and a payoff at the end of each one.**",
+    "**Feedback that explains why** beats points for finishing. Quiz questions with answers help memory.",
+    "Cut the decoration: interesting-but-irrelevant extras **hurt** learning (g = −0.33)."
+   ],
+   "cards": [
+    {
+     "type": "info",
+     "tag": "Strong basis",
+     "h": "Give a payoff every few minutes",
+     "p": "Because later rewards feel worth less, end each short section with something gained now: an answer, a number, a decision.",
+     "more": "Strong on the ADHD side; nobody has tested it on documents directly.",
+     "src": "[evidence table](https://github.com/calindumitru/ludify/blob/main/docs/evidence.md), principle 1"
+    },
+    {
+     "type": "quiz",
+     "h": "Which one raises interest in the material later on?",
+     "opts": [
+      "A reward promised for finishing",
+      "Positive feedback that tells you what you got right",
+      "A leaderboard"
+     ],
+     "right": 1,
+     "why": "Informational positive feedback raised later interest (+0.33). Expected rewards for doing the task lowered it (around −0.28 to −0.40). Feedback beats bribes.",
+     "src": "Deci, Koestner & Ryan 1999"
+    },
+    {
+     "type": "info",
+     "tag": "Moderate evidence",
+     "h": "Chunk it, label it, sum it up",
+     "ul": [
+      "**Segments:** short parts, and the reader controls the pace.",
+      "**Signals:** headings, summaries, bold key terms (d = 0.38 in general research).",
+      "**One idea per segment**, matching the working-memory finding."
+     ],
+     "src": "Rey et al. 2019 · Richter et al. 2016 · Alpizar et al. 2020"
+    },
+    {
+     "type": "quiz",
+     "h": "Fun but off-topic extras (\"seductive details\"): what do they do to learning?",
+     "opts": [
+      "Help, by keeping you interested",
+      "Hurt it",
+      "Nothing measurable"
+     ],
+     "right": 1,
+     "why": "They hurt: g = −0.33. Funny asides, decorative images and side stories pull attention from the point. Make the core itself engaging instead.",
+     "src": "Sundararajan & Adesope 2020"
+    },
+    {
+     "type": "guess",
+     "h": "Low-stakes quiz questions vs re-reading: how big is the memory boost?",
+     "p": "Effect size, g. 0.2 is small, 0.5 medium, 0.8 large.",
+     "min": 0,
+     "max": 1.2,
+     "step": 0.05,
+     "start": 0.2,
+     "answer": 0.65,
+     "tol": 0.15,
+     "fmt": "g = {v:2}",
+     "why": "About g = 0.61–0.70 in general research: the testing effect. In small ADHD studies, students gained as much as everyone else.",
+     "src": "Adesope et al. 2017 · Knouse 2016 · Minear 2023"
+    },
+    {
+     "type": "info",
+     "tag": "Moderate evidence",
+     "h": "One if-then plan at the start",
+     "p": "\"If it's after lunch, then I open section 2.\" Plans like this help (g = 0.31), and some analyses find them stronger in ADHD.",
+     "more": "Shown in children, including some with ADHD; not yet tested in adults with ADHD. The plan on this deck's first screen is one.",
+     "src": "Breitwieser & Reinelt 2026 · Gawrilow & Gollwitzer 2008"
+    },
+    {
+     "type": "order",
+     "h": "Rank these by strength of evidence, strongest first",
+     "items": [
+      "Near, frequent payoffs",
+      "Low-stakes quiz questions with feedback",
+      "Easy stop and resume, with breaks",
+      "Points and badges as the engine"
+     ],
+     "shown": [
+      3,
+      1,
+      0,
+      2
+     ],
+     "why": "Payoffs (strong ADHD basis) → quiz questions (moderate) → breaks (weak, no ADHD trial) → points and badges (no evidence for ADHD reading, and some harm)."
+    }
+   ]
+  },
+  {
+   "id": "games",
+   "c": "w2",
+   "title": "Games and tools",
+   "mins": 4,
+   "tease": "Does gamification work, and what's already out there?",
+   "badge": {
+    "ico": "🎮",
+    "name": "Game Theorist"
+   },
+   "recap": [
+    "Games for ADHD move the trained task; real-life effects are small and shrink under blinding.",
+    "**Streaks that show breaks backfire.** Gamification novelty fades after about four weeks.",
+    "No tool converts a document into an ADHD-friendly version that keeps its interactive parts: that's a real gap."
+   ],
+   "cards": [
+    {
+     "type": "big",
+     "tag": "Small effect",
+     "h": "Gamified ADHD programmes: the best estimate",
+     "big": "g = 0.28",
+     "p": "Across 27 trials with 2,911 young people, gamified interventions improved symptoms a little, and only on parent- or child-rated scales. Corrected for missing studies: 0.17.",
+     "more": "A 2025 meta-analysis found no gains in working memory or inhibition. A 2025 review called effects beyond the game itself \"unconvincing\".",
+     "src": "Bryant et al. 2024 · Schultz et al. 2025"
+    },
+    {
+     "type": "quiz",
+     "h": "EndeavorRx, the FDA-cleared ADHD game. What did its trial show?",
+     "opts": [
+      "Better attention test scores, but no difference in rated symptoms",
+      "Big improvements in schoolwork",
+      "No effect at all"
+     ],
+     "right": 0,
+     "why": "Attention-test change 0.93 vs 0.03 (348 children), but rated symptoms didn't differ from the control game. The adult trial had no control group.",
+     "src": "Kollins et al. 2020"
+    },
+    {
+     "type": "quiz",
+     "tag": "True or false",
+     "h": "Gamifying a course always boosts motivation.",
+     "opts": [
+      "True",
+      "False"
+     ],
+     "right": 1,
+     "why": "False. On average gamification helps learning (g = 0.49), but a 16-week gamified course **lowered** motivation and exam scores, and the novelty starts fading after about four weeks.",
+     "src": "Sailer & Homner 2020 · Hanus & Fox 2015"
+    },
+    {
+     "type": "quiz",
+     "h": "An app shows you've broken your 12-day streak. What happens next, on average?",
+     "opts": [
+      "People come back more determined",
+      "People are less likely to keep going",
+      "Nothing changes"
+     ],
+     "right": 1,
+     "why": "Seeing a broken streak makes people less likely to continue. That's why this deck has no streaks: leaving for a week costs you nothing.",
+     "src": "Silverman & Barasch 2023"
+    },
+    {
+     "type": "quiz",
+     "h": "Which ADHD-marketed reading or focus tool has independent evidence that it helps?",
+     "opts": [
+      "Bionic Reading",
+      "Brain.fm",
+      "NotebookLM",
+      "None of them"
+     ],
+     "right": 3,
+     "why": "None. Bionic Reading's only positive result is its own 12-person pilot. Brain.fm's paper was co-written by its head of science. NotebookLM makes no ADHD claim.",
+     "src": "[tools survey](https://github.com/calindumitru/ludify/blob/main/SPEC.md#why-it-should-exist)"
+    },
+    {
+     "type": "info",
+     "tag": "Best near-miss",
+     "h": "Google's \"Learn Your Way\" came closest",
+     "p": "It rebuilds a textbook chapter into levelled text, quizzes, narrated slides and a mind map. Recall after 3–5 days: **78% vs 67%** for the plain chapter.",
+     "more": "One chapter, 60 students, none selected for ADHD, run by Google. The gain came from several formats and recall quizzes, not from points or badges.",
+     "src": "arXiv 2509.13348"
+    },
+    {
+     "type": "info",
+     "tag": "The gap",
+     "h": "Nothing converts a document like this one",
+     "p": "Generators such as NotebookLM turn text into audio, mind maps and quizzes, but drop the interactive parts and keep everything in their own app. Game builders need everything written by hand. ADHD-branded tools change how text looks, not how it's built.",
+     "more": "The W3C's cognitive-accessibility guidance (COGA) is the best checklist found: it names ADHD and covers page purpose, chunking and summaries.",
+     "src": "[tools survey](https://github.com/calindumitru/ludify/blob/main/SPEC.md#why-it-should-exist) · [W3C COGA](https://www.w3.org/TR/coga-usable/)"
+    }
+   ]
+  },
+  {
+   "id": "myths",
+   "c": "w4",
+   "title": "Myth busters",
+   "mins": 3,
+   "tease": "The boss level: popular ADHD advice, true or false?",
+   "badge": {
+    "ico": "🧨",
+    "name": "Myth Buster"
+   },
+   "recap": [
+    "Bionic Reading, dyslexia fonts and colour overlays: no better than plain text.",
+    "Fidget spinners hurt attention; ordinary movement is a different thing.",
+    "\"Dopamine hits\" is a story; what holds is behavioural: **sooner, more frequent payoffs**."
+   ],
+   "cards": [
+    {
+     "type": "quiz",
+     "tag": "Myth or fact?",
+     "h": "Bionic Reading (bold first letters) helps ADHD readers.",
+     "opts": [
+      "Fact",
+      "Myth"
+     ],
+     "right": 1,
+     "why": "Myth. Four controlled studies (2024–26) found no benefit and one found a cost. None tested ADHD readers specifically, and the vendor's own pilot had 12 people. Readwise's 1,916 readers: 325 vs 328 words a minute.",
+     "src": "Snell 2024 · Spear et al. 2025 · Readwise"
+    },
+    {
+     "type": "quiz",
+     "tag": "Myth or fact?",
+     "h": "ADHD is a dopamine shortage, so learning needs \"dopamine hits\".",
+     "opts": [
+      "Fact",
+      "Myth"
+     ],
+     "right": 1,
+     "why": "Myth, or at least a big overreach. It rests on one correlational brain-scan study of 53 people. What holds up is behavioural: sooner, more frequent payoffs matter more.",
+     "src": "Volkow et al. 2009 · Faraone et al. 2021"
+    },
+    {
+     "type": "quiz",
+     "tag": "Myth or fact?",
+     "h": "Fidget spinners help children with ADHD focus.",
+     "opts": [
+      "Fact",
+      "Myth"
+     ],
+     "right": 1,
+     "why": "Myth. In 60 young children with ADHD, spinners made attention worse. General movement is different: boys with ADHD who moved more did better on working-memory tasks.",
+     "src": "Graziano et al. 2020 · Sarver et al. 2015"
+    },
+    {
+     "type": "multi",
+     "h": "Which of these have been proven in a trial with ADHD participants?",
+     "opts": [
+      "The Pomodoro technique",
+      "Body doubling",
+      "If-then plans",
+      "Low-stakes retrieval quizzes"
+     ],
+     "right": [
+      2,
+      3
+     ],
+     "why": "If-then plans (in children, including ADHD) and retrieval practice (four small ADHD studies) have trials. Pomodoro and body doubling have **none** with ADHD participants, though both are low-risk to try.",
+     "src": "[evidence table](https://github.com/calindumitru/ludify/blob/main/docs/evidence.md), myths"
+    },
+    {
+     "type": "quiz",
+     "tag": "Myth or fact?",
+     "h": "Dyslexia fonts and coloured overlays make reading easier.",
+     "opts": [
+      "Fact",
+      "Myth"
+     ],
+     "right": 1,
+     "why": "Myth. They perform no better than placebo in controlled tests.",
+     "src": "Kuster et al. 2018 · Griffiths et al. 2016"
+    },
+    {
+     "type": "quiz",
+     "tag": "Myth or fact?",
+     "h": "A progress bar always keeps people going.",
+     "opts": [
+      "Fact",
+      "Myth"
+     ],
+     "right": 1,
+     "why": "Myth. Steady bars don't reduce drop-off, and bars that start slowly increase it. Showing what's left in plain units (like \"12 cards left\") is the safer bet; that's what this deck does at the top.",
+     "src": "Villar et al. 2013"
+    },
+    {
+     "type": "quiz",
+     "tag": "Myth or fact?",
+     "h": "Optional white or pink noise can help some people with ADHD.",
+     "opts": [
+      "Fact, a little",
+      "Myth"
+     ],
+     "right": 0,
+     "why": "A small yes: g = 0.249 in ADHD, with small harm for people without ADHD. That's why it should only ever be an option, never the default.",
+     "src": "Nigg et al. 2024"
+    }
+   ]
+  }
+ ]
+}
