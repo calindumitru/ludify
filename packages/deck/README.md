@@ -31,3 +31,11 @@ From the repo root:
   dark; screenshots land in `packages/deck/dist/shots/`. Needs `npx playwright install chromium`
   once.
 - `node packages/deck/scripts/build.ts <deck.json> <out.html>`: builds any deck.
+- `node packages/deck/scripts/validate.ts <deck.json>`: validates a deck against `deck.schema.json`
+  and the deck rules, prints each error, and exits 1 if there are any.
+
+## Validation
+
+`deck.schema.json` (JSON Schema draft 2020-12) is the deck format; `validateDeck` in
+`src/validate.ts` checks a deck against it and against the rules a schema can't express. See
+[deck.md](deck.md#validation).

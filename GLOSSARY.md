@@ -44,6 +44,15 @@ The card before the decision world that says what the brief can't tell the user:
 evidence, unverified facts, what depends on their situation.
 _Avoid_: Disclaimer, caveat card
 
+**Decision world**:
+A deck's last world: only decision cards, then the summary card that sends the picks to the chat.
+_Avoid_: Final level, boss level
+
+**Source tag**:
+The label on an info card naming where its fact comes from (official, study, test, vendor, notes),
+plus an evidence grade when the card claims an effect.
+_Avoid_: Badge, label
+
 **Picks**:
 The options the user chose on a deck's decision cards, sent to the chat at the end of the deck.
 _Avoid_: Answers, results, choices

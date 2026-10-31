@@ -65,3 +65,33 @@ in Markdown). Inline Markdown works: `**bold**`, `` `code` ``, `[text](url)`.
   Never put three `info` cards in a row.
 - Each world's `recap` gives exactly three lines: the things the reader should still know tomorrow.
 - Use emoji only as signals (the world's badge, one per tag). Leave decoration and images out.
+
+## Validation
+
+A model-written deck is checked before it plays: `validateDeck(json)` in `src/validate.ts`, against
+[deck.schema.json](deck.schema.json) (JSON Schema draft 2020-12) and the rules a schema can't
+express. Where this page and the schema differ, the schema wins: the example deck still uses the
+old format until its rewrite (SPEC milestone 4).
+
+What the schema adds to the tables above:
+
+- `lang` (a BCP 47 tag) is required. `ui` is optional, holds only the engine's string keys, and its
+  strings are plain text without HTML tags.
+- `src` is an https URL, or `{"notes": true}` for a fact from the user's notes. Every card except
+  `decide` and `summary` needs it, apart from the limits card.
+- An `info` card's `tag` is a source tag, `{"source": "study", "grade": "moderate"}`: `source` is
+  one of `official`, `study`, `test`, `vendor`, `notes`, and `grade` (`strong`, `moderate`, `weak`,
+  `none`, `against`) is there only when the card claims an effect. The limits card is
+  `{"type": "info", "kind": "limits", ...}` and needs neither tag nor `src`.
+- No `challenge` cards, and no `ticket` on `decide`.
+
+Rules checked in code: 2 or 4 worlds; the last world is the decision world (`decide` cards, then one
+`summary`); exactly one limits card, the last card of the world before it; `summary.from` points at
+`decide` cards; indexes inside a card exist (`right`, `lean`, `shown`) and a guess's `start` and
+`answer` sit between `min` and `max`; 64 KB at most.
+
+The result is `{ ok, errors, deck, skipped }`. Each error is one sentence naming the place
+(`world 2, card 3`), the field and the fix. A broken card is left out of `deck` and listed in
+`skipped`; a broken `ui` string is left out and the engine's English fills in. `deck` is `null`
+when the deck can't be played: a deck-level error, a broken card that the structure needs (the
+limits card, a card of the decision world), or a world with no valid card left.
