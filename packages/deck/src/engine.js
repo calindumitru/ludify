@@ -17,7 +17,10 @@ import { pickVoice } from './voice.ts';
   const num = (x, d = 0) => (Number.isFinite(+x) ? +x : d);
   const load = () => { try { const v = JSON.parse(localStorage.getItem(KEY)); return isMap(v) ? v : {}; } catch { return {}; } };
   let saved = load();
-  const fresh = s => ({ calm: !!s.calm, plan: Number.isInteger(s.plan) ? s.plan : null, xp: num(s.xp), done: isMap(s.done) ? s.done : {}, ans: isMap(s.ans) ? s.ans : {}, badges: isMap(s.badges) ? s.badges : {}, start: num(s.start, Date.now()), view: 'home', w: 0, c: 0, dir: 1, tmp: {} });
+  // Progress maps are keyed by world ids from the deck, so they have no prototype: an id like
+  // "__proto__" is then just a key.
+  const dict = m => Object.assign(Object.create(null), isMap(m) ? m : {});
+  const fresh = s => ({ calm: !!s.calm, plan: Number.isInteger(s.plan) ? s.plan : null, xp: num(s.xp), done: dict(s.done), ans: dict(s.ans), badges: dict(s.badges), start: num(s.start, Date.now()), view: 'home', w: 0, c: 0, dir: 1, tmp: {} });
   const S = fresh(saved);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ calm: S.calm, plan: S.plan, xp: S.xp, done: S.done, ans: S.ans, badges: S.badges, start: S.start, at: [S.w, S.c] })); } catch {} };
   // Plain text from the ui block, escaped; `vars` fill its {slots} first.

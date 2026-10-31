@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import ro from '../fixtures/ro-deck.json' with { type: 'json' };
 import { DEFAULT_UI, deckLang, fill, mergeUi } from './ui.ts';
 
 describe('fill', () => {
@@ -53,5 +54,16 @@ describe('deckLang', () => {
     expect(deckLang('')).toBe('en');
     expect(deckLang('"><script>')).toBe('en');
     expect(deckLang(42)).toBe('en');
+  });
+});
+
+describe('the Romanian fixture deck', () => {
+  it('translates every engine string, so autoplay can catch English leaking through', () => {
+    const missing = Object.entries(DEFAULT_UI).flatMap(([k, v]) => {
+      const theirs = (ro.ui as Record<string, unknown>)[k];
+      if (theirs == null) return [k];
+      return typeof v === 'object' && !Array.isArray(v) ? Object.keys(v).filter(kk => (theirs as Record<string, unknown>)[kk] == null).map(kk => `${k}.${kk}`) : [];
+    });
+    expect(missing).toEqual([]);
   });
 });

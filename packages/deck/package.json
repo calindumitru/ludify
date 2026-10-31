@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build:example": "node scripts/build.ts ../../examples/adhd-learning-deck.json dist/adhd-learning-deck.html",
-    "autoplay": "npm run build:example && node scripts/autoplay.ts dist/adhd-learning-deck.html dist/shots",
+    "autoplay": "npm run build:example && npm run build:fixtures && node scripts/autoplay.ts dist/adhd-learning-deck.html dist/shots/example && node scripts/autoplay.ts dist/ro-deck.html dist/shots/ro && node scripts/autoplay.ts dist/hostile-deck.html dist/shots/hostile",
+    "build:fixtures": "node scripts/build.ts fixtures/ro-deck.json dist/ro-deck.html && node scripts/build.ts fixtures/hostile-deck.json dist/hostile-deck.html",
     "validate": "node scripts/validate.ts"
   },
   "devDependencies": {

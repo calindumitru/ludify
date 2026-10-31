@@ -41,8 +41,9 @@ const unsafeMarkup = (p: Page) => p.$$eval('body *', els => {
 
 const b = await chromium.launch();
 const errs: string[] = [];
-for (const scheme of ['light', 'dark'] as const) {
+async function run(scheme: 'light' | 'dark') {
   const ctx = await b.newContext({ viewport: { width: 400, height: 860 }, colorScheme: scheme });
+  ctx.setDefaultTimeout(5000);
   // confirm() is blocked in both hosts: count calls. In dark, act as an MCP Apps host for links.
   await ctx.addInitScript((asHost: boolean) => {
     const w = window as unknown as Record<string, unknown>;
@@ -110,7 +111,7 @@ for (const scheme of ['light', 'dark'] as const) {
   await p.click('main [data-act="home"]');
 
   // Links: a new tab in a plain browser; through the host's openLink inside one.
-  const link = await p.$('main a[href]');
+  const link = await p.$('main a[href]:visible');
   if (link) {
     const [href, target, rel] = await link.evaluate((a: HTMLAnchorElement) => [a.href, a.target, a.rel]);
     if (target !== '_blank' || rel !== 'noopener noreferrer') errs.push(`${scheme}: link ${href} has target "${target}", rel "${rel}"`);
@@ -143,6 +144,10 @@ for (const scheme of ['light', 'dark'] as const) {
   if (pwned) errs.push(`${scheme}: deck text ran code (window.pwned is set)`);
   console.log(`${scheme}: start over took 2 taps, confirm() calls ${confirms}${link ? `, link ${scheme === 'dark' ? 'went to the host' : 'opens a new tab'}` : ''}`);
   await ctx.close();
+}
+// A step that throws (a button that never shows up) fails the run but keeps what was found so far.
+for (const scheme of ['light', 'dark'] as const) {
+  try { await run(scheme); } catch (e) { errs.push(`${scheme}: stopped: ${String((e as Error).message).split('\n')[0]}`); }
 }
 await b.close();
 if (errs.length) { console.error('FAIL\n' + errs.join('\n')); process.exit(1); }
