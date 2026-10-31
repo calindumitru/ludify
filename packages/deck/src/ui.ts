@@ -104,12 +104,15 @@ export function mergeUi(deckUi: unknown): Ui {
 export const fill = (template: unknown, values: Record<string, unknown>): string =>
   String(template ?? '').replace(/\{(\w+)\}/g, (slot, name: string) => (Object.hasOwn(values, name) ? String(values[name]) : slot));
 
-/** The deck's language as a canonical BCP 47 tag, or English. */
+/** Hyphenated letters and digits: the validator checks a tag's shape; this only keeps an odd one. */
+const LANG_TAG = /^[A-Za-z0-9]{1,8}(-[A-Za-z0-9]{1,8})*$/;
+
+/** The deck's language as a canonical BCP 47 tag; a tag Intl can't canonicalize stays as written when it is hyphenated letters and digits, and anything else is English. */
 export function deckLang(lang: unknown): string {
   if (typeof lang !== 'string' || !lang) return 'en';
   try {
     return Intl.getCanonicalLocales(lang)[0] ?? 'en';
   } catch {
-    return 'en';
+    return LANG_TAG.test(lang) ? lang : 'en';
   }
 }

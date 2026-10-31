@@ -50,6 +50,11 @@ describe('deckLang', () => {
     expect(deckLang('pt-br')).toBe('pt-BR');
   });
 
+  it('keeps a tag the schema accepts when Intl cannot canonicalize it', () => {
+    expect(deckLang('zh-cmn-Hans-CN')).toBe('zh-cmn-Hans-CN');
+    expect(deckLang('x-ludify')).toBe('x-ludify');
+  });
+
   it('falls back to English for a missing or broken tag', () => {
     expect(deckLang(undefined)).toBe('en');
     expect(deckLang('')).toBe('en');
