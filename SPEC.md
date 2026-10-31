@@ -2,15 +2,14 @@
 
 *Disce ludendo*: learn by playing.
 
-Status: draft, 2026-10-30. Nothing is built yet. Sections marked **Decided** were settled with the
-Owner; everything under **Proposed** is a starting position the next session should grill before
-building; **Open questions** lists what is still undecided.
+Status: ready to build, 2026-10-31. Nothing is built yet. Sections marked **Decided** were settled
+with the Owner; **Open questions** lists what is still undecided (only launch questions are left).
 
 ## 1. What it is
 
 Ludify turns a research question into a short, playable brief. The user brings a topic, answers a
 few questions that pin down what they want to know, and the AI researches it on **the user's own
-Claude or ChatGPT usage**. The result is a card deck — four short "worlds" of cards with quick
+Claude or ChatGPT usage**. The result is a card deck — two or four short "worlds" of cards with quick
 quizzes, guesses and decisions — that is fun to go through and still accurate, designed from graded
 evidence on what keeps readers with ADHD engaged ([docs/evidence.md](docs/evidence.md)).
 
@@ -63,73 +62,117 @@ Researched 2026-10-30. These programmes are weeks to months old; re-check before
 
 | Route | Works with | Status | Verdict |
 |---|---|---|---|
-| **MCP App** inside Claude and ChatGPT | both | MCP Apps is the shared standard for interactive UI in chat hosts, official since 2026-01-26; Claude and ChatGPT both render them ([MCP blog](https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/), SDK `@modelcontextprotocol/ext-apps`) | **Proposed primary route** |
+| **MCP App** inside Claude and ChatGPT | both | MCP Apps is the shared standard for interactive UI in chat hosts, official since 2026-01-26; Claude and ChatGPT both render them ([MCP blog](https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/), SDK `@modelcontextprotocol/ext-apps`) | **Primary route** (decided) |
 | Standalone web app with *Sign in with ChatGPT* | ChatGPT only | Launched 2026-09-29; usage comes from the user's Plus/Pro plan; open-source apps self-serve, hosted/commercial apps must apply; Plus has a 5-hour limit shared across apps ([terms](https://openai.com/policies/sign-in-with-chatgpt-terms/), [help](https://help.openai.com/en/articles/20001542)) | Later, maybe |
 | Standalone web app with Claude subscription sign-in | — | **Not allowed**: since Feb 2026 Anthropic's consumer terms forbid using Free/Pro/Max OAuth tokens in other products | No |
 | Bring-your-own API key | both | Works, but most consumers have no key, it's pay-per-token, and we'd handle secrets | No (maybe a power-user option later) |
 | Shared Claude artifact | Claude only | Viewers' usage counts against their own plan, no keys ([Anthropic](https://claude.com/blog/claude-powered-artifacts)); probably no web search inside the artifact | Throwaway prototype only |
 
-### Proposed: the MCP App
+### Decided: the MCP App
+
+**Decided** 2026-10-31 (tickets [#7](https://github.com/calindumitru/ludify/issues/7),
+[#8](https://github.com/calindumitru/ludify/issues/8), [#9](https://github.com/calindumitru/ludify/issues/9),
+[#13](https://github.com/calindumitru/ludify/issues/13)).
 
 The host (Claude or ChatGPT) does the talking and the researching with its own model and web
 search; Ludify supplies the method and the deck.
 
+- **Hosts:** both at launch through one MCP App. Claude is the reference host (design, autoplay
+  tests); ChatGPT gets a smoke test at every milestone.
 - **Landing page** (public website): the pitch, a playable example deck, and "Add to Claude" / "Add
-  to ChatGPT" instructions. This is also where discovery happens — in-chat app discovery is weak.
-- **MCP server** (remote, streamable HTTP), stateless, with roughly these tools:
-  - `ludify_plan(topic)` → returns the method: the narrowing questions to ask (as an interactive
-    form if the host supports it, else as text) and the research brief template.
-  - `ludify_render(deck)` → validates a deck (JSON, see §4) and returns a UI resource that plays it
-    inline, plus a download of the self-contained HTML file.
-  - Possibly `ludify_guide()` → the deck-writing rules (card types, evidence rules) for the model to
-    follow while writing; or embed them in `ludify_plan`'s answer.
+  to ChatGPT" instructions, including how to set Ludify's tools to "Always allow" in Claude. This is
+  also where discovery happens — in-chat app discovery is weak.
+- **MCP server** (remote, streamable HTTP), stateless, with three tools:
+  - `ludify_plan(topic)` → a UI resource with the narrowing form (§5), plus the same questions as
+    text for hosts that can't show it (e.g. mobile), and the research method. The form posts the
+    answers to the chat (sent at once in ChatGPT; in Claude the user presses Enter).
+  - `ludify_guide()` → the deck-writing manual: card types, writing rules, the source rules and the
+    deck JSON Schema, plus how to answer a "my picks" message (§4). The model calls it right before
+    writing, so the rules are fresh after a long research phase.
+  - `ludify_render(deck)` → validates the deck (§4) and returns a UI resource that plays it inline.
+    If it's invalid, it returns an exact error list (card 7: missing `src`) as a tool error,
+    pointing back to `ludify_guide`, and the model fixes the deck and calls again. If the second try
+    is still invalid, the valid cards play under a visible note naming the skipped cards and why.
+- **Decks from existing research** are a v1 entry point: research done with the AI in the chat, a
+  markdown file attached to the chat, or pasted findings. The model skips `ludify_plan` and goes
+  `ludify_guide` → `ludify_render`; Ludify never reads files itself. Facts without a source get one
+  from web search, or else are labelled "from your notes · unverified" (§4).
 - Research runs between those calls, in the host, on the user's plan. Ludify's server never calls a
   model, so Ludify's running cost is only hosting.
-- No Ludify accounts, no stored content in v1: the deck lives in the chat and in the downloaded file;
-  reading progress lives in the browser's `localStorage`.
+- No Ludify accounts, no stored content and **no file in v1**: the deck lives only in the chat (if
+  the chat is lost, so is the brief); reading progress lives in the browser's `localStorage`.
+- **Stack:** the official MCP SDK (`@modelcontextprotocol/server` v2 + `ext-apps`, as in the spike)
+  in a stateless Cloudflare Worker, no Durable Objects or storage. If the SDK won't run on Workers,
+  fall back to Cloudflare's `createMcpHandler`, which wraps it. The landing page runs on Cloudflare
+  Pages.
 
 ## 4. The deck
 
-Reuse the engine from the Owner's skills repo: `calindumitru/skills`, branch
-`fun-briefs-and-grilling` (PR #17), folder `skills/fun-briefs/`:
+**Decided** 2026-10-31 (tickets [#5](https://github.com/calindumitru/ludify/issues/5),
+[#10](https://github.com/calindumitru/ludify/issues/10), [#11](https://github.com/calindumitru/ludify/issues/11)).
+
+The engine moves into this repo from the Owner's skills repo (`calindumitru/skills`, folder
+`skills/fun-briefs/`), and lives only here: Ludify is meant to replace the `fun-briefs` skill, so
+there's no shared package. Until Ludify's full flow works (milestone 3), fixes go into both copies;
+then the skill is deleted, after its evidence table moves to a home `fun-grilling` can link to.
+What it brings:
 
 - `assets/deck/index.html` — the engine (layout, card plays, XP, saved progress, calm mode,
   read-aloud, keyboard and swipe, reduced motion, "N cards left · ~M min").
 - `assets/deck/c-deck.js` — a starter deck with every `Q.ui` string key.
-- `references/deck.md` — worlds and the nine card types (`info`, `big`, `quiz`, `guess`, `order`,
-  `multi`, `challenge`, `decide`, `summary`) and what a good deck looks like.
+- `references/deck.md` — worlds and the card types and what a good deck looks like.
 - `scripts/autoplay.mjs` — Playwright script that plays every card, light and dark; exits 1 on
   page errors or stuck cards.
 
 Live examples built with it (local files on the Owner's machine): `adhd-learning-brief.html`,
 `funvenio-audience-quest.html` in `/Users/calin/Projects/`.
 
-**Proposed changes for Ludify:**
+Changes for Ludify:
 
-- **Decks are data, never code.** Today `c-deck.js` is JavaScript and some card types take
-  functions (`guess.fmt`, `challenge.calc`). A model-written deck must be JSON validated against a
-  schema; the engine must never `eval` model output. Replace `fmt` with a format template
-  (`"{v} min"`, `"€{v}"`); drop `challenge` from v1 or give it a tiny safe formula language.
-- Escape everything: card text is Markdown-lite rendered by the engine, so links and HTML from
-  the model must be sanitised (only `**bold**`, `` `code` ``, `[text](https url)`).
-- Every factual card carries `src` (a source link). The validator rejects decks where it's missing.
-- Each brief gets its own `localStorage` key (hash of topic + date).
-- Ship a JSON Schema for the deck and give it to the model in `ludify_plan`/`ludify_guide`.
+- **Decks are data, never code.** A model-written deck is JSON validated against a JSON Schema; the
+  engine never `eval`s model output. Number formats are templates (`"{v} min"`, `"€{v}"`, `"{v:2}"`).
+- **Eight card types:** `info`, `big`, `quiz`, `guess`, `order`, `multi`, `decide`, `summary`.
+  `challenge` is dropped from v1 (it needed code). `decide` loses its `ticket` field.
+- **Markdown-lite only:** `**bold**`, `` `code` `` and `[text](https url)`; everything else renders
+  as plain text. Links open through the host's `openLink`.
+- **Sources:** every factual card carries `src` (a link), and the validator rejects decks where
+  it's missing, with two exceptions: the limits card (`kind: limits`), and `src: {notes: true}` for
+  facts from the user's chat or attached research, always shown as "from your notes · unverified".
+- **Source tag:** each `info` card's tag names the source type (official, study, test, vendor
+  claim, from your notes). Cards that claim an effect ("cuts bills by 30%") also get an evidence
+  grade (strong / moderate / weak / none / against); prices and specs don't.
+- **Language:** the deck is written in the user's language and carries a `lang` field. The engine
+  ships English UI strings; the deck may carry a `ui` block with translated strings, which the model
+  fills in and the validator checks like any other data. Read-aloud picks the best available voice
+  for `lang` instead of the browser default.
+- **Progress:** each brief gets its own `localStorage` key (hash of topic + date). It lasts per chat
+  in Claude and across chats in ChatGPT; that's accepted for v1.
+- **Host limits:** "Start over" confirms inside the deck (`confirm()` is blocked in both hosts).
+- **The ending — Send to chat:** the `summary` card collects the `decide` picks, and one button
+  posts them to the chat. The model replies with what follows from them and offers to challenge the
+  picks or plan the next steps. The user copies anything they want to keep from the chat.
 
 ## 5. Research quality
 
-**Proposed:**
+**Decided** 2026-10-31 (ticket [#12](https://github.com/calindumitru/ludify/issues/12)).
 
-- The narrowing questions fix the scope before research starts: what they want to decide or
-  understand, depth, what they already know, any region/time constraints.
-- Sources: prefer primary and peer-reviewed; every number on a card links to where it came from;
-  each `info` card's `tag` grades the evidence (strong / moderate / weak / none / against).
-- The deck ends on a "boss level": the decisions the reader faces, or the myths, whichever the
-  topic builds towards.
-- The deck always states the limits of its evidence (like the "no controlled study of adults with
-  ADHD reading documents" caveat in the Owner's ADHD brief).
-- Quality will vary with the user's plan and model. A free-tier user gets a weaker brief; say so on
-  the landing page rather than hide it.
+- **The narrowing form** fixes the scope before research starts. Three questions are always asked:
+  what you're deciding, how deep, what you already know. The model may add up to three
+  topic-specific ones (e.g. country, house size) as JSON, validated like a deck (types, at most
+  three, plain text).
+- **Depth:** quick is 2 worlds and about 12 cards with a lighter search; thorough is 4 worlds and
+  about 25–30 cards with a wider search and more primary sources.
+- **Sources:** prefer primary and peer-reviewed; every number on a card links to where it came from;
+  tags as in §4.
+- **Structure:** every deck ends on a "Your decision" world of `decide` cards, which leads to Send
+  to chat. Right before it comes one limits card ("What this can't tell you": gaps in the evidence,
+  what's unverified, what depends on the user's situation). Thorough decks also get a myths world.
+  The validator requires the decision world and the limits card.
+- **Free tier:** quality varies with the user's plan and model. The landing page says so; the deck
+  and the form don't.
+- **Example deck:** the landing page's playable example is the ADHD deck in `examples/`, rewritten
+  to this structure and framed as a decision ("How should I set up my reading and learning?"), so
+  ADHD sits inside the content, not in the page's headline.
 
 ## 6. Design rules (from the evidence)
 
@@ -147,31 +190,44 @@ Full table with sources: [docs/evidence.md](docs/evidence.md). In short:
 
 - Ludify accounts, payments, a library of saved briefs, sharing links.
 - Ludify calling models itself (no API keys, no model bill).
-- Uploading the user's own documents (a natural v2: "ludify this PDF").
+- Uploading documents to Ludify (a natural v2: "ludify this PDF"). A file attached to the chat
+  already works in v1, because the host model reads it (§3).
+- A downloadable HTML file of the brief: neither host lets the iframe download, and v1 stores
+  nothing, so the deck lives only in the chat.
 - Audio overviews, video, mind maps.
 - Visual card types (charts, graphs, flows, workflows, mind maps as cards): wanted for v2. They'd be
   data the engine draws, never code, and only visuals that carry the content (decoration stays out).
 - A standalone web app with Sign in with ChatGPT.
+- **The full brief** as well as the deck (after v1, needs a prototype first). From the Owner's own
+  use of the funvenio briefs: the deck makes the topic light and gets you interested, but making a
+  decision properly takes the full brief too. Candidates: a host document (a Claude artifact or
+  ChatGPT canvas) written after research, with the deck made from it; the brief inside the deck
+  ("Go deeper", a Deck | Brief toggle); or a plain chat message. v1 builds the deck first.
+- Kept in view, not specified: a narrated story version ("tell me a story") as an alternative to
+  read-aloud; progress that follows the user across chats in Claude (a fixed `ui.domain`).
 
-## 8. Open questions (grill these first)
+## 8. Open questions
 
-1. **Which host first?** Claude, ChatGPT, or both at once through MCP Apps? (Test how each renders
-   the UI and whether forms/tool calls from the iframe work in both.)
-2. ~~**Who is it for first?**~~ **Decided:** decision-makers, desktop first; see §2.
-3. **Free forever or a business?** Hosting only costs a little; is there ever a paid tier, and what
+**Decided** 2026-10-31 (the grilling on the wayfinder map,
+[#1](https://github.com/calindumitru/ludify/issues/1)):
+
+- ~~**Which host first?**~~ Both through one MCP App, Claude as the reference host; see §3.
+- ~~**Who is it for first?**~~ Decision-makers, desktop first; see §2.
+- ~~**Where do the narrowing questions live?**~~ A Ludify form in the iframe, with a text fallback; see §3, §5.
+- ~~**Hosting:**~~ a stateless Cloudflare Worker with the official MCP SDK, the landing page on Cloudflare Pages; see §3.
+- ~~**Engine ownership:**~~ moves into this repo, no shared package; `fun-briefs` is retired after milestone 3; see §4.
+- ~~**Language:**~~ decks in the user's language, with translatable UI strings; see §4.
+
+Still open, for a later launch effort (none of them changes how v1 is built):
+
+1. **Free forever or a business?** Hosting only costs a little; is there ever a paid tier, and what
    would it hold?
-4. **Where do the narrowing questions live?** In the host's own question UI, or a Ludify form
-   rendered by the MCP App?
-5. **Hosting:** which provider and stack for the MCP server and landing page? (Owner is fluent in
-   AWS — Lambda Function URLs, CloudFront — from Funvenio.)
-6. **Domain:** `ludify.com` / `ludify.app` availability not checked.
-7. **Trademark:** the Owner knowingly accepts the risk from *Ludiz* (French gamified-training tool,
+2. **Domain:** `ludify.com`, `ludify.app`, `ludify.io` and `ludify.dev` all have DNS set up
+   (2026-10-31), so they're probably taken; alternatives aren't checked.
+3. **Trademark:** the Owner knowingly accepts the risk from *Ludiz* (French gamified-training tool,
    Skillfab). A formal TMview / USPTO check in classes 9, 41 and 42 has not been done.
-8. **Engine ownership:** vendor a copy of the deck engine into this repo, or make it a shared
-   package the `fun-briefs` skill also uses?
-9. **Language:** English only, or decks in the user's language?
-10. **Directory listings:** do we submit to Claude's and ChatGPT's app directories, and what do
-    they require (review, privacy policy, terms)?
+4. **Directory listings:** do we submit to Claude's and ChatGPT's app directories, and what do
+   they require (review, privacy policy, terms)?
 
 ## 9. To verify before building
 
@@ -187,16 +243,21 @@ Full table with sources: [docs/evidence.md](docs/evidence.md). In short:
 - **No download from inside the iframe** in either host.
 - Also: `confirm()` is blocked in both; the clipboard is blocked in Claude and works in ChatGPT.
 
-Still unchecked: chatgpt.com in a browser, mobile in both hosts, and Claude Free's one-connector limit.
+**Checked in milestone 1, not before** (decided 2026-10-31; none of them changes the design):
+chatgpt.com in a browser, mobile in both hosts, and Claude Free's one-connector limit.
 
-## 10. Milestones (proposed)
+## 10. Milestones
 
-1. **Spike:** a local MCP server with `ludify_render` only, showing the existing ADHD deck (as JSON)
-   inline in Claude. Answers most of §9.
-2. **Deck schema + safe engine:** JSON Schema, validator, engine reading JSON, `autoplay.mjs` in CI.
-3. **Full flow in one host:** `ludify_plan` → questions → research → `ludify_render`.
-4. **Second host**, then the landing page with a playable example.
-5. **Public launch:** remote hosting, privacy notice, directory submissions.
+1. **Deployed render:** the Cloudflare Worker with `ludify_render` only, showing the existing ADHD
+   deck (as JSON) inline in Claude and ChatGPT. Checks the three facts left in §9. (The local host
+   spike, [#6](https://github.com/calindumitru/ludify/issues/6), is done.)
+2. **Deck schema + safe engine:** the engine moved into this repo, JSON Schema, validator (with the
+   retry and partial-deck rules), engine reading JSON, `autoplay.mjs` in CI.
+3. **Full flow:** `ludify_plan` → form → research → `ludify_guide` → `ludify_render` → Send to
+   chat, plus decks from existing research, in Claude with a ChatGPT smoke test. Then the
+   `fun-briefs` skill is retired.
+4. **Landing page** with the rewritten ADHD example deck and "Add to" instructions for both hosts.
+5. **Public launch:** privacy notice, directory submissions, the launch questions in §8.
 
 ## 11. References
 
