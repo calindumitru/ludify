@@ -1,5 +1,6 @@
 // Plays every card of a built deck in headless Chromium, light and dark, and fails on any
-// page error, stuck card, card left unplayed, or markup the deck's text should never produce.
+// page error, stuck card, card left unplayed, world that doesn't end on its recap, or markup the
+// deck's text should never produce.
 // Also checks "Start over" (two taps, no confirm()), links through the host, and the deck's language.
 // Ported from calindumitru/skills @ f308ebc (skills/fun-briefs/scripts/autoplay.mjs).
 // Usage: node scripts/autoplay.ts <built.html> [shots-dir]
@@ -16,7 +17,7 @@ if (!file) {
 }
 if (shots) await mkdir(shots, { recursive: true });
 
-type Deck = { lang?: string; worlds: { cards: unknown[] }[]; ui?: Record<string, unknown> };
+type Deck = { lang?: string; worlds: { cards: unknown[]; recap?: unknown }[]; ui?: Record<string, unknown> };
 
 // The elements the engine itself writes, and the attributes they carry. Deck text may add only
 // strong, code and a[href^="https:"] (the Markdown-lite renderer); anything else is a leak.
@@ -85,7 +86,7 @@ async function run(scheme: 'light' | 'dark') {
   const total = deck.worlds.reduce((a, w) => a + w.cards.length, 0);
   const worlds = await p.$$eval('.worlds [data-world]', x => x.length);
   if (worlds !== deck.worlds.length) errs.push(`${scheme}: ${worlds} world tiles for ${deck.worlds.length} worlds`);
-  let cards = 0;
+  let cards = 0, recaps = 0;
   for (let w = 0; w < worlds; w++) {
     await p.click(`.worlds [data-world="${w}"]`);
     for (let i = 0; i < 40; i++) {
@@ -105,19 +106,25 @@ async function run(scheme: 'light' | 'dark') {
       if (await p.$eval('#next', (el: HTMLButtonElement) => el.disabled)) { errs.push(`${scheme}: stuck on world ${w + 1}, card ${i + 1}`); break; }
       await p.click('#next');
       await p.waitForTimeout(150);
-      if (await p.$('.medal')) break; // the world-end screen
+      if (await p.$('main .recap')) break; // the world's end: its recap
     }
-    await check(`world ${w + 1} end`);
+    const recap = await p.$$eval('main .recap li', x => x.length);
+    const want = Math.min(3, Array.isArray(deck.worlds[w].recap) ? (deck.worlds[w].recap as unknown[]).length : 1);
+    if (recap) recaps++;
+    if (recap !== want) errs.push(`${scheme}: world ${w + 1} ends on ${recap} recap lines, expected ${want}`);
+    if (shots && w === 0) await p.screenshot({ path: `${shots}/w0-recap-${scheme}.png` });
+    await check(`world ${w + 1} recap`);
     await p.click('main [data-act="home"]');
   }
   const left = (await p.textContent('#left')) ?? '';
   if (cards !== total) errs.push(`${scheme}: played ${cards} of ${total} cards`);
+  if (recaps !== worlds) errs.push(`${scheme}: reached ${recaps} of ${worlds} world recaps`);
   if (left !== ui.allDoneShort) errs.push(`${scheme}: top bar says "${left}" after every card`);
-  console.log(`${scheme}: lang ${lang}, ${worlds} worlds, ${cards}/${total} cards played; ${left}; ${await p.textContent('#xp')}`);
-  await p.click('[data-act="finale"]');
-  await p.waitForTimeout(300);
-  await check('finale'); await leaks('finale');
-  await p.click('main [data-act="home"]');
+  console.log(`${scheme}: lang ${lang}, ${worlds} worlds, ${cards}/${total} cards played, ${recaps}/${worlds} recaps reached; ${left}; ${await p.textContent('#xp')}`);
+  const ticks = await p.$$eval('.worlds .tick', x => x.length);
+  if (ticks !== worlds) errs.push(`${scheme}: ${ticks} done ticks on the map for ${worlds} finished worlds`);
+  if (shots) await p.screenshot({ path: `${shots}/home-done-${scheme}.png` });
+  await check('home, all done'); await leaks('home, all done');
 
   // Links: a new tab in a plain browser; through the host's openLink inside one.
   const link = await p.$('main a[href]:visible');
@@ -160,4 +167,4 @@ for (const scheme of ['light', 'dark'] as const) {
 }
 await b.close();
 if (errs.length) { console.error('FAIL\n' + errs.join('\n')); process.exit(1); }
-console.log('OK: no errors, no stuck cards, every card played, no unsafe markup, light and dark');
+console.log('OK: no errors, no stuck cards, every card played, every world ended on its recap, no unsafe markup, light and dark');
