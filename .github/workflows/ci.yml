@@ -27,9 +27,14 @@ jobs:
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: npm run autoplay
+      # The MCP server in `wrangler dev` (local, no Cloudflare account) called over MCP, then the
+      # deck player in a stand-in host.
+      - run: npm run smoke
       - if: always()
         uses: actions/upload-artifact@v6
         with:
           name: autoplay-shots
-          path: packages/deck/dist/shots/
+          path: |
+            packages/deck/dist/shots/
+            packages/server/dist/shots/
           if-no-files-found: ignore

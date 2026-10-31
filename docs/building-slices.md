@@ -117,23 +117,39 @@ points at the code the owner saw and the build is checked against it.
   - typecheck: `npm run typecheck`;
   - one test file: `npx vitest run src/format.test.ts` from
     `packages/deck/` (any path under that package);
-  - full suite: `npm run typecheck && npm test && npm run autoplay`, which
-    is what CI (`.github/workflows/ci.yml`) runs on every pull request and
-    on `main`. Autoplay builds three decks (the example, a Romanian fixture
-    and a hostile fixture) and plays every card, light and dark, failing on
-    unsafe markup or a page wider than the phone; its screenshots land in
-    `packages/deck/dist/shots/<deck>/`.
+  - one server test file: `npx vitest run src/server.test.ts` from
+    `packages/server/` (run `npm run build -w @ludify/server` first; it
+    writes the deck player into `src/player.gen.ts`);
+  - full suite: `npm run typecheck && npm test && npm run autoplay && npm
+    run smoke`, which is what CI (`.github/workflows/ci.yml`) runs on every
+    pull request and on `main`. Autoplay builds three decks (the example, a
+    Romanian fixture and a hostile fixture) and plays every card, light and
+    dark, failing on unsafe markup or a page wider than the phone; its
+    screenshots land in `packages/deck/dist/shots/<deck>/`. Smoke starts the
+    MCP server in `wrangler dev` on port 8791, calls `ludify_render` over MCP
+    with `packages/deck/fixtures/quick-deck.json` and a broken copy of it,
+    then plays the result in the deck player inside a stand-in host at
+    375 px; its screenshots land in `packages/server/dist/shots/player/`.
 - **Run the app locally:** `npm run build:example -w @ludify/deck`, then open
   `packages/deck/dist/adhd-learning-deck.html` in a browser (a file, no
   server). Build any deck with
   `node packages/deck/scripts/build.ts <deck.json> <out.html>`, and validate one with
-  `node packages/deck/scripts/validate.ts <deck.json>`. Once a slice
-  adds a server, it goes here; pick a non-default port.
+  `node packages/deck/scripts/validate.ts <deck.json>`.
+- **Run the MCP server locally:** `npm run dev -w @ludify/server` builds the
+  deck player and serves the Worker with `wrangler dev` at
+  `http://localhost:8791/mcp` (Streamable HTTP, no auth, no Cloudflare
+  account needed). Another port: `npx wrangler dev --port <n>` from
+  `packages/server/` after `npm run build -w @ludify/server`. To try it in a
+  host, expose it with `cloudflared tunnel --url http://localhost:8791` and
+  add `https://<tunnel>/mcp` as a custom connector. The smoke test alone:
+  `npm run smoke` (it picks port 8791; `node scripts/smoke.ts <port>` from
+  `packages/server/` for another).
 - **Docs a slice updates:** [SPEC.md](../SPEC.md) only where the issue says
   so, [GLOSSARY.md](../GLOSSARY.md) for new terms, and this section when a
   command changes.
-- **Deploy and live checks:** none until the Worker slice; it adds the
-  deploy and how to read the deployed version here.
+- **Deploy and live checks:** none yet. The Worker (`packages/server/`,
+  `wrangler.jsonc`) runs only locally and in CI; the deploy slice adds the
+  deploy job and how to read the deployed version here.
 - **Repo rules the builder follows:** decks are data (JSON validated by the
   schema), never code: no `eval`, no `new Function`, no `innerHTML` with
   model text that hasn't been through the Markdown-lite renderer. Design
