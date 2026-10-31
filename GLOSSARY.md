@@ -21,7 +21,8 @@ _Avoid_: Game, quiz, brief
 
 **Brief**:
 The reference document made from research: a long page you browse and come back to, with a
-contents index, dense evidence and things to explore (scores, calculators). After v1.
+contents index, dense evidence and things to explore (scores, calculators). After v1. The model
+example is the Owner's funvenio audience brief (`funvenio-audience-brief.html`, 28 Oct).
 _Avoid_: Report, full brief, deck
 
 **World**:

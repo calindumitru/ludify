@@ -209,7 +209,9 @@ Full table with sources: [docs/evidence.md](docs/evidence.md). In short:
   | Evidence | One source per card | Dense: status pills per gate, every figure linked to its source |
   | Pace | Cards and minutes left, recaps, calm mode, read-aloud | None; the reader chooses where to go |
 
-  The deck gets you interested; deciding properly also takes the brief. Open for the prototype: where
+  The reference brief is `/Users/calin/Projects/funvenio-audience-brief.html` on the Owner's
+  machine; like the deck, it's a data object drawn by a script, though its calculators are code
+  today. The deck gets you interested; deciding properly also takes the brief. Open for the prototype: where
   the brief lives (a host document, a Ludify page, inside the deck), and how its explorers
   (scores, calculators) stay data, never code. v1 builds the deck only.
 - Kept in view, not specified: a narrated story version ("tell me a story") as an alternative to
