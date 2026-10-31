@@ -1,21 +1,28 @@
 # Ludify
 
-Ludify turns a research question into a short, playable brief, researched on the user's own Claude
+Ludify turns a research question into a short, playable deck, researched on the user's own Claude
 or ChatGPT usage.
 
 ## Language
 
 **User**:
-The person who asks Ludify for a brief and plays its deck; in v1 always the same person.
+The person who asks Ludify for a deck and plays it; in v1 always the same person.
 _Avoid_: Reader, player, asker
 
-**Brief**:
-The researched answer to one topic: its findings, their sources, and the limits of the evidence.
-_Avoid_: Report, summary
+**Research**:
+What the host model found on one topic: the findings, their sources and the limits of the
+evidence. Ludify never shows it raw; it becomes a deck (and, after v1, a brief).
+_Avoid_: Brief (for the findings themselves), notes (unless it existed before Ludify was called)
 
 **Deck**:
-The playable form a brief is delivered in, made of worlds of cards.
-_Avoid_: Game, quiz, brief (for the playable form)
+The decision game made from research: you play it once, in about ten minutes, one idea per card,
+and it ends on your picks. Made of worlds of cards. The only output in v1.
+_Avoid_: Game, quiz, brief
+
+**Brief**:
+The reference document made from research: a long page you browse and come back to, with a
+contents index, dense evidence and things to explore (scores, calculators). After v1.
+_Avoid_: Report, full brief, deck
 
 **World**:
 One of a deck's few themed sections, each a run of cards.
@@ -26,12 +33,12 @@ One screen of a deck holding a single idea or play (an explanation, a quiz, a gu
 _Avoid_: Slide, page
 
 **Narrowing form**:
-The short form shown before research that fixes a brief's scope: what the user is deciding, how
+The short form shown before research that fixes the research's scope: what the user is deciding, how
 deep to go, what they already know, and up to three topic-specific questions.
 _Avoid_: Questionnaire, intake
 
 **Depth**:
-How big a brief is: quick (two worlds) or thorough (four worlds, wider research).
+How big a deck is: quick (two worlds) or thorough (four worlds, wider research).
 _Avoid_: Length, level
 
 **Guide**:
@@ -40,7 +47,7 @@ source rules and the deck schema.
 _Avoid_: Prompt, instructions
 
 **Limits card**:
-The card before the decision world that says what the brief can't tell the user: gaps in the
+The card before the decision world that says what the research can't tell the user: gaps in the
 evidence, unverified facts, what depends on their situation.
 _Avoid_: Disclaimer, caveat card
 

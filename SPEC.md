@@ -7,7 +7,7 @@ with the Owner; **Open questions** lists what is still undecided (only launch qu
 
 ## 1. What it is
 
-Ludify turns a research question into a short, playable brief. The user brings a topic, answers a
+Ludify turns a research question into a short, playable deck. The user brings a topic, answers a
 few questions that pin down what they want to know, and the AI researches it on **the user's own
 Claude or ChatGPT usage**. The result is a card deck — two or four short "worlds" of cards with quick
 quizzes, guesses and decisions — that is fun to go through and still accurate, designed from graded
@@ -36,7 +36,7 @@ of the Owner's funvenio repo) found nothing that does this:
 2. They connect their ChatGPT or Claude account.
 3. They enter a research topic and get a few questions to pinpoint what they're interested in.
 4. When they confirm, the research runs on their own usage.
-5. At the end, a deck is created for them in the same style as the Owner's existing briefs.
+5. At the end, a deck is created for them in the same style as the Owner's existing decks.
 
 Users are the public: anyone with a Claude or ChatGPT account. Not only people with ADHD — the
 design helps everyone, but never claims to treat or be proven for ADHD (see §6).
@@ -100,7 +100,7 @@ search; Ludify supplies the method and the deck.
 - Research runs between those calls, in the host, on the user's plan. Ludify's server never calls a
   model, so Ludify's running cost is only hosting.
 - No Ludify accounts, no stored content and **no file in v1**: the deck lives only in the chat (if
-  the chat is lost, so is the brief); reading progress lives in the browser's `localStorage`.
+  the chat is lost, so is the deck); reading progress lives in the browser's `localStorage`.
 - **Stack:** the official MCP SDK (`@modelcontextprotocol/server` v2 + `ext-apps`, as in the spike)
   in a stateless Cloudflare Worker, no Durable Objects or storage. If the SDK won't run on Workers,
   fall back to Cloudflare's `createMcpHandler`, which wraps it. The landing page runs on Cloudflare
@@ -145,7 +145,7 @@ Changes for Ludify:
   ships English UI strings; the deck may carry a `ui` block with translated strings, which the model
   fills in and the validator checks like any other data. Read-aloud picks the best available voice
   for `lang` instead of the browser default.
-- **Progress:** each brief gets its own `localStorage` key (hash of topic + date). It lasts per chat
+- **Progress:** each deck gets its own `localStorage` key (hash of topic + date). It lasts per chat
   in Claude and across chats in ChatGPT; that's accepted for v1.
 - **Host limits:** "Start over" confirms inside the deck (`confirm()` is blocked in both hosts).
 - **The ending — Send to chat:** the `summary` card collects the `decide` picks, and one button
@@ -188,21 +188,30 @@ Full table with sources: [docs/evidence.md](docs/evidence.md). In short:
 
 ## 7. Out of scope for v1
 
-- Ludify accounts, payments, a library of saved briefs, sharing links.
+- Ludify accounts, payments, a library of saved decks, sharing links.
 - Ludify calling models itself (no API keys, no model bill).
 - Uploading documents to Ludify (a natural v2: "ludify this PDF"). A file attached to the chat
   already works in v1, because the host model reads it (§3).
-- A downloadable HTML file of the brief: neither host lets the iframe download, and v1 stores
+- A downloadable HTML file of the deck: neither host lets the iframe download, and v1 stores
   nothing, so the deck lives only in the chat.
 - Audio overviews, video, mind maps.
 - Visual card types (charts, graphs, flows, workflows, mind maps as cards): wanted for v2. They'd be
   data the engine draws, never code, and only visuals that carry the content (decoration stays out).
 - A standalone web app with Sign in with ChatGPT.
-- **The full brief** as well as the deck (after v1, needs a prototype first). From the Owner's own
-  use of the funvenio briefs: the deck makes the topic light and gets you interested, but making a
-  decision properly takes the full brief too. Candidates: a host document (a Claude artifact or
-  ChatGPT canvas) written after research, with the deck made from it; the brief inside the deck
-  ("Go deeper", a Deck | Brief toggle); or a plain chat message. v1 builds the deck first.
+- **The brief** (see GLOSSARY.md) as well as the deck: after v1, needs a prototype first. The two
+  are different formats for different jobs, from the Owner's own funvenio documents:
+
+  | | Deck (e.g. funvenio #900, 31 Oct) | Brief (e.g. the audience brief, 28 Oct) |
+  |---|---|---|
+  | Job | Come out with a decision in about 10 minutes | Consult big material more than once |
+  | Shape | Worlds of one-idea cards, any order, a 60-second version up front | A long page: contents index, colour-coded parts, ~25 sections, sticky header |
+  | Interaction | Answering: quizzes, guesses, your calls, picks sent back | Exploring: pick a category to see its scores, calculators with your inputs |
+  | Evidence | One source per card | Dense: status pills per gate, every figure linked to its source |
+  | Pace | Cards and minutes left, recaps, calm mode, read-aloud | None; the reader chooses where to go |
+
+  The deck gets you interested; deciding properly also takes the brief. Open for the prototype: where
+  the brief lives (a host document, a Ludify page, inside the deck), and how its explorers
+  (scores, calculators) stay data, never code. v1 builds the deck only.
 - Kept in view, not specified: a narrated story version ("tell me a story") as an alternative to
   read-aloud; progress that follows the user across chats in Claude (a fixed `ui.domain`).
 
