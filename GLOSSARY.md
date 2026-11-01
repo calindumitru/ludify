@@ -61,6 +61,11 @@ The page Ludify's server gives the host to show a deck inline: the deck engine p
 that takes the deck from `ludify_render`'s result. One page for every deck.
 _Avoid_: Widget, viewer
 
+**Partial deck**:
+What `ludify_render` plays when the model's second try at a deck still has broken cards: the valid
+cards, under a note at the top naming each card left out and why.
+_Avoid_: Broken deck, fallback deck
+
 **Source tag**:
 The label on an info card naming where its fact comes from (official, study, test, vendor, notes),
 plus an evidence grade when the card claims an effect.

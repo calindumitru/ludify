@@ -1,9 +1,10 @@
 // Smoke test: starts the Worker in `wrangler dev` (the real Workers runtime, locally) and calls
-// ludify_guide, then ludify_render with the quick fixture deck and with a broken copy of it, over MCP.
+// ludify_guide, then ludify_render over MCP: the quick fixture deck; a broken copy on attempt 1 and,
+// with its deck-level problem, on attempt 2; and a deck with broken cards on attempt 2 (partial).
 // Usage: node scripts/smoke.ts [port]   (default 8791; run `npm run build` first)
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { checkGuide, checkInvalid, checkTool, checkValid, connect } from './render-checks.ts';
+import { checkDeckLevel, checkGuide, checkInvalid, checkPartial, checkTool, checkValid, connect } from './render-checks.ts';
 
 const port = Number(process.argv[2] ?? 8791);
 const base = `http://127.0.0.1:${port}`;
@@ -42,7 +43,13 @@ try {
   console.log(`ok: valid deck plays (${Date.now() - t} ms); player page ${html.length} bytes`);
   t = Date.now();
   const text = await checkInvalid(client);
-  console.log(`ok: broken deck is a tool error (${Date.now() - t} ms):\n${text.replace(/^/gm, '    ')}`);
+  console.log(`ok: broken deck is a tool error on attempt 1 (${Date.now() - t} ms):\n${text.replace(/^/gm, '    ')}`);
+  t = Date.now();
+  const partial = await checkPartial(client);
+  console.log(`ok: broken cards on attempt 2 play as a partial deck (${Date.now() - t} ms, both attempts):\n${partial.replace(/^/gm, '    ')}`);
+  t = Date.now();
+  const deckLevel = await checkDeckLevel(client);
+  console.log(`ok: a deck-level problem on attempt 2 is still a tool error (${Date.now() - t} ms): ${deckLevel.split('\n').filter(l => l.startsWith('- ')).length} problems`);
   await client.close();
 } catch (e) {
   failed = true;

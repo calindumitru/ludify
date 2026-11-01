@@ -1,6 +1,7 @@
 // Plays ludify_render's result in the deck player inside a stand-in host (scripts/fake-host.ts),
 // in headless Chromium at phone width: the deck shows, a link goes through the host, a broken deck
-// shows a short note, and nothing errors or scrolls sideways. Screenshots: dist/shots/player/.
+// shows a short note, a partial deck (attempt 2) names its cards left out at the top, and nothing
+// errors or scrolls sideways. Screenshots: dist/shots/player/.
 // Usage: node scripts/player-check.ts   (run `npm run build` first)
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -82,6 +83,25 @@ const ok = await render(deck);
   if (await frame.locator('.world').count()) errs.push('invalid: a broken deck showed worlds');
   await page.screenshot({ path: `${shots}/invalid.png` });
   console.log(`invalid: note "${(await frame.locator('#main').innerText()).trim()}"`);
+  await page.close();
+}
+
+// Attempt 2 with broken cards: the valid cards play under a note naming each card left out.
+{
+  const input = await loadDeck('partial-deck.json');
+  const partial = await render(input, 2);
+  const skipped = (partial._meta as { deck: { skipped: unknown[] } }).deck.skipped;
+  const { page, frame } = await open(partial, 'partial');
+  await frame.waitForSelector('.world', { timeout: 10_000 });
+  const noted = await frame.locator('main .left-out li').count();
+  if (noted !== skipped.length) errs.push(`partial: the note names ${noted} cards, ${skipped.length} were left out`);
+  const top = await frame.$eval('main > :first-child', el => el.className);
+  if (top !== 'left-out') errs.push(`partial: the first thing on the map is "${top}", not the note`);
+  const lead = (await frame.locator('main .left-out p').innerText()).trim();
+  if (lead !== input.ui.skippedNote) errs.push(`partial: the note reads "${lead}", not the deck's "${input.ui.skippedNote}"`);
+  const width = await sideways(frame, 'partial home');
+  await page.screenshot({ path: `${shots}/partial.png` });
+  console.log(`partial: note at the top names ${noted} cards left out, in the deck's language ("${lead}"); width ${width}`);
   await page.close();
 }
 
