@@ -43,14 +43,16 @@ From the repo root:
 - `npm run typecheck`, `npm test`: types and unit tests.
 - `npm run build:example -w @ludify/deck`: builds the example deck into
   `packages/deck/dist/adhd-learning-deck.html`; open that file in a browser to play it.
-- `npm run autoplay`: builds the example deck and the two fixture decks in `fixtures/` (Romanian,
-  with a full `ui` block; hostile, with markup and `javascript:` links in every string) and plays
+- `npm run autoplay`: builds the example deck and three fixture decks in `fixtures/` (Romanian,
+  with a full `ui` block; hostile, with markup and `javascript:` links in every string; and the
+  partial deck built from `partial-deck.json`, a Romanian deck with two broken cards) and plays
   every card in headless Chromium, light and dark. It fails on a page error, a stuck card, markup
   the engine doesn't write, a request to anywhere but the fonts, a `confirm()` call, English showing
-  in a translated deck, or a page wider than 400 px. It also taps "Start over" and follows a link
+  in a translated deck, a partial deck without its note at the top, or a page wider than 400 px. It also taps "Start over" and follows a link
   through a stand-in host. Screenshots land in `packages/deck/dist/shots/<deck>/`. Needs
   `npx playwright install chromium` once.
-- `node packages/deck/scripts/build.ts <deck.json> <out.html>`: builds any deck.
+- `node packages/deck/scripts/build.ts <deck.json> <out.html>`: builds any deck. With `--partial`
+  first, builds what `ludify_render` plays after a failed retry: the valid cards and the note.
 - `node packages/deck/scripts/validate.ts <deck.json>`: validates a deck against `deck.schema.json`
   and the deck rules, prints each error, and exits 1 if there are any.
 

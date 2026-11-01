@@ -3,13 +3,13 @@
 // travels to the player inside the tool result.
 import { McpServer, createMcpHandler, type CallToolResult } from '@modelcontextprotocol/server';
 import { RESOURCE_MIME_TYPE, registerAppResource, registerAppTool } from '@modelcontextprotocol/ext-apps/server';
-import { validateDeck, type Deck } from '@ludify/deck/validate';
+import { partialDeck, validateDeck, type Deck } from '@ludify/deck/validate';
 import * as z from 'zod';
 import { GUIDE } from './guide.gen.ts';
 import { PLAYER_HTML } from './player.gen.ts';
 
 // Hosts cache a UI resource by its URI, so a player change that old pages can't take bumps it.
-export const PLAYER_URI = 'ui://ludify/deck-player-v1.html';
+export const PLAYER_URI = 'ui://ludify/deck-player-v2.html';
 
 // The engine's stylesheet loads its fonts from Google Fonts; the host's sandbox allows only these.
 const FONT_ORIGINS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
@@ -25,23 +25,35 @@ async function withKey(deck: Deck): Promise<Deck> {
   return { ...deck, ui: { ...deck.ui, key: `ludify:${hex}` } };
 }
 
-export async function render(input: unknown): Promise<CallToolResult> {
+const bullets = (errors: string[]) => errors.map(e => `- ${e}`).join('\n');
+
+// The server keeps nothing between calls, so the model says which try this is. Attempt 1 of an
+// invalid deck returns the errors; from attempt 2 on, the valid cards play under a note naming the
+// cards left out, unless a deck-level problem leaves nothing to play.
+export async function render(input: unknown, attempt = 1): Promise<CallToolResult> {
   const result = validateDeck(input);
-  if (!result.ok || !result.deck) {
+  const played = result.ok || attempt >= 2 ? partialDeck(result) : null;
+  if (!played) {
     return {
       isError: true,
       content: [{
         type: 'text',
         text: 'The deck was not shown because it has these problems:\n'
-          + result.errors.map(e => `- ${e}`).join('\n')
-          + '\nFix every one and call ludify_render again with the whole deck. Call ludify_guide for the deck format and writing rules.',
+          + bullets(result.errors)
+          + `\nFix every one and call ludify_render again with the whole deck and \`attempt: ${attempt + 1}\`. Call ludify_guide for the deck format and writing rules.`,
       }],
     };
   }
-  const deck = await withKey(result.deck);
+  const deck = await withKey(played);
   const cards = cardCount(deck);
+  const left = result.skipped.length;
+  const text = `The deck is playing inline: ${cards} cards in ${deck.worlds.length} worlds.`
+    + (result.ok ? '' : (left
+      ? ` ${left} card${left === 1 ? ' was' : 's were'} left out, and a note at the top of the deck names them for the user.`
+      : ' No card was left out; a broken `ui` string shows in English.')
+      + ` It still had these problems:\n${bullets(result.errors)}\nTell the user in one line that some cards were left out; call ludify_render again only if they ask for a fixed deck.`);
   return {
-    content: [{ type: 'text', text: `The deck is playing inline: ${cards} cards in ${deck.worlds.length} worlds.` }],
+    content: [{ type: 'text', text }],
     // The player reads the deck from here; hosts pass `_meta` to the app and keep it out of the model's context.
     _meta: { deck },
   };
@@ -65,13 +77,16 @@ export function createServer(): McpServer {
   registerAppTool(server, 'ludify_render', {
     title: 'Play a Ludify deck',
     description: 'Checks a Ludify deck (JSON) and plays it inline as cards the user can tap through; if the deck has problems, returns the list to fix. '
+      + 'Call it again with `attempt: 2` after fixing; from then on, cards that are still broken are left out with a note to the user. '
       + 'Call ludify_guide first and write the deck to its format.',
     inputSchema: z.object({
       deck: z.unknown().describe('The deck: a JSON object with `lang`, `ui` and `worlds`, written to the format ludify_guide gives.'),
+      attempt: z.number().int().min(1).optional().describe('Which try this is: leave it out the first time, then 2, 3 and so on as the error asks. '
+        + 'From 2 on, a deck that still has broken cards plays without them.'),
     }),
     annotations: { title: 'Play a Ludify deck', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     _meta: { ui: { resourceUri: PLAYER_URI } },
-  }, async ({ deck }) => render(deck));
+  }, async ({ deck, attempt }) => render(deck, attempt));
 
   return server;
 }

@@ -3,7 +3,7 @@ import { Ajv2020 } from 'ajv/dist/2020.js';
 import schema from '../deck.schema.json' with { type: 'json' };
 import quick from '../fixtures/quick-deck.json' with { type: 'json' };
 import thorough from '../fixtures/thorough-deck.json' with { type: 'json' };
-import { MAX_DECK_BYTES, validateDeck } from './validate.ts';
+import { MAX_DECK_BYTES, partialDeck, validateDeck } from './validate.ts';
 
 type Json = any; // fixtures are edited freely to break them
 
@@ -345,5 +345,26 @@ describe('the ui block', () => {
 
   it('allows text that only mentions < and >', () => {
     expect(validateDeck(broken(thorough, d => { d.ui.lead = 'd < 0.5 is small, > 0.8 large'; })).ok).toBe(true);
+  });
+});
+
+describe('partialDeck: the deck a failed retry plays', () => {
+  it('is the valid cards plus a `skipped` list naming each card left out, without the English errors', () => {
+    const result = validateDeck(broken(quick, d => { delete d.worlds[0].cards[0].src; d.worlds[0].cards[1].right = 9; }));
+    expect(partialDeck(result)).toEqual({
+      ...result.deck,
+      skipped: [
+        { world: 1, card: 1, type: 'info', h: quick.worlds[0].cards[0].h },
+        { world: 1, card: 2, type: 'quiz', h: quick.worlds[0].cards[1].h },
+      ],
+    });
+  });
+
+  it('is null when no deck can be played', () => {
+    expect(partialDeck(validateDeck(broken(quick, d => { d.worlds[1].cards.pop(); })))).toBeNull();
+  });
+
+  it('is the deck as it is when nothing was skipped', () => {
+    expect(partialDeck(validateDeck(quick))).toEqual(quick);
   });
 });

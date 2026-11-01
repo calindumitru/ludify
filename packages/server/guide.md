@@ -15,7 +15,11 @@ this text and the schema differ, the schema wins.
 3. Write the deck as one JSON object with `lang`, `ui` and `worlds`, in the user's language.
 4. Call `ludify_render` with `{"deck": <the deck>}`.
 5. If it returns a list of problems, fix every one and call `ludify_render` again with the whole
-   deck. Each problem names the place (`world 2, card 3`), the field and the fix.
+   deck and `"attempt": 2`. Each problem names the place (`world 2, card 3`), the field and the
+   fix. On attempt 2 and later, cards that are still broken are left out and the rest plays, with
+   a note at the top naming each card left out; translate `ui.skippedNote` (the note's first
+   line) and `ui.skippedWhy` (the reason after each card) with the other strings. A problem with the deck as a whole still returns the list:
+   fix it and call again with the next `attempt`.
 
 Keep your chat message around the deck short: one line saying what the deck covers is enough.
 The deck itself carries the content.
@@ -223,6 +227,8 @@ language.
   "noted": "Noted.",
   "changeAny": "You can change it any time.",
   "skipped": "(skipped)",
+  "skippedNote": "These cards had a problem, so they are left out:",
+  "skippedWhy": "this card broke a deck rule",
   "copy": "Copy",
   "copied": "Copied ✓",
   "whyRight": "right first try",
@@ -602,6 +608,8 @@ it, where `summary.from` points, the indexes inside a card, and 64 KB at most.
         },
         "source": { "$ref": "#/$defs/plain" },
         "skipped": { "$ref": "#/$defs/plain" },
+        "skippedNote": { "$ref": "#/$defs/plain" },
+        "skippedWhy": { "$ref": "#/$defs/plain" },
         "tags": {
           "description": "the default tag for each card type, as plain text without HTML tags",
           "type": "object",

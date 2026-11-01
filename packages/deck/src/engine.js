@@ -77,6 +77,15 @@ import { reward } from './xp.ts';
     const m = /^([\s\S]*?)\{([\s\S]+?)\}([\s\S]*)$/.exec(String(t ?? ''));
     return m ? `${md(m[1])}<em>${md(m[2])}</em>${md(m[3])}` : md(t);
   }
+  // A partial deck (ludify_render after a failed retry) names each card it left out, with one
+  // reason in the deck's language; the exact errors went to the model.
+  function leftOut() {
+    const cards = list(Q.skipped).filter(isMap);
+    if (!cards.length) return '';
+    const name = s => (typeof s.h === 'string' && s.h ? md(s.h) : esc(label(U.tags, s.type) || `${num(s.world)}.${num(s.card)}`));
+    return `<div class="left-out" role="note"><p>${T('skippedNote')}</p><ul>${cards.map(s =>
+      `<li><strong>${name(s)}</strong>: ${T('skippedWhy')}</li>`).join('')}</ul></div>`;
+  }
   function home() {
     S.view = 'home'; document.getElementById('nav').hidden = true;
     document.body.style.removeProperty('--wc');
@@ -84,7 +93,7 @@ import { reward } from './xp.ts';
     const opts = list(U.planOpts);
     const planned = S.plan != null && opts[S.plan] != null;
     const fullLink = httpsUrl(U.fullLink) && U.fullText ? ` · ${linkHtml(U.fullLink, esc(U.fullText))}` : '';
-    document.getElementById('main').innerHTML = `
+    document.getElementById('main').innerHTML = `${leftOut()}
       <div class="hello"><div class="kicker">${md(U.kicker)}</div><h1>${titleHtml(U.title)}</h1><p class="lead">${md(U.lead)}</p></div>
       ${U.planQ ? `<div class="plan"><p class="q">${md(U.planQ)}</p><div class="row">${opts.map((o, i) => `<button data-plan="${i}" aria-pressed="${S.plan === i}">${esc(o)}</button>`).join('')}</div>${planned ? `<p class="then">${md(fill(U.planThen, { when: String(opts[S.plan]).toLowerCase() }))}</p>` : ''}</div>` : ''}
       ${U.gist ? `<details class="gist"><summary data-open="${T('gistOpen')}" data-close="${T('gistClose')}">${md(U.gistTitle)}</summary><ol>${list(U.gist).map(g => `<li>${md(g)}</li>`).join('')}</ol></details>` : ''}

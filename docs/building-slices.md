@@ -124,12 +124,13 @@ points at the code the owner saw and the build is checked against it.
     run smoke`, which is what CI (`.github/workflows/ci.yml`) runs on every
     pull request and on `main`, along with `npx wrangler deploy --dry-run
     --outdir dist/worker` from `packages/server/` (bundles the Worker, no
-    account needed). Autoplay builds three decks (the example, a
-    Romanian fixture and a hostile fixture) and plays every card, light and
+    account needed). Autoplay builds four decks (the example, a
+    Romanian fixture, a hostile fixture and a partial deck) and plays every card, light and
     dark, failing on unsafe markup or a page wider than the phone; its
     screenshots land in `packages/deck/dist/shots/<deck>/`. Smoke starts the
     MCP server in `wrangler dev` on port 8791, calls `ludify_guide` and `ludify_render` over MCP
-    with `packages/deck/fixtures/quick-deck.json` and a broken copy of it,
+    with `packages/deck/fixtures/quick-deck.json`, a broken copy of it on attempts 1 and 2, and
+    `partial-deck.json` on attempt 2,
     then plays the result in the deck player inside a stand-in host at
     375 px; its screenshots land in `packages/server/dist/shots/player/`.
 - **Run the app locally:** `npm run build:example -w @ludify/deck`, then open

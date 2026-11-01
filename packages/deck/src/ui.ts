@@ -60,6 +60,8 @@ export const DEFAULT_UI = {
   noted: 'Noted.',
   changeAny: 'You can change it any time.',
   skipped: '(skipped)',
+  skippedNote: 'These cards had a problem, so they are left out:',
+  skippedWhy: 'this card broke a deck rule',
   copy: 'Copy',
   copied: 'Copied ✓',
   whyRight: 'right first try',
