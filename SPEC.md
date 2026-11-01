@@ -257,8 +257,18 @@ Still open, for a later launch effort (none of them changes how v1 is built):
 - **No download from inside the iframe** in either host.
 - Also: `confirm()` is blocked in both; the clipboard is blocked in Claude and works in ChatGPT.
 
-**Checked in milestone 1, not before** (decided 2026-10-31; none of them changes the design):
-chatgpt.com in a browser, mobile in both hosts, and Claude Free's one-connector limit.
+**Checked** 2026-11-01 against the deployed Worker ([#47](https://github.com/calindumitru/ludify/issues/47)):
+
+- **chatgpt.com in a browser:** works. Add Ludify under **Plugins → Add custom MCP server → Create
+  as a plugin** (Server URL, no authentication). The "Connect to a custom MCP" form under the MCPs
+  tab registers it for Codex only, and then the chat never sees Ludify's tools. ChatGPT marks the
+  player "CSP off" even though the server declares `ui.csp`; check before a directory submission.
+- **Claude desktop:** a model-written deck played inline, and Send to chat filled the composer. Claude
+  shows its own warning about text an app puts there ("Use caution before running this prompt…").
+- **"ludify" works as a verb** in both hosts once the connector is in the chat.
+
+**Not checked:** Claude Free's one-connector limit (the Owner chose not to test it; the landing page
+should say Free allows one custom connector). Mobile in both hosts is still open on #47.
 
 ## 10. Milestones
 
