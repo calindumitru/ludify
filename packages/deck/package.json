@@ -6,6 +6,7 @@
     ".": "./src/build.ts",
     "./validate": "./src/validate.ts",
     "./ui": "./src/ui.ts",
+    "./picks": "./src/picks.ts",
     "./deck.schema.json": "./deck.schema.json"
   },
   "scripts": {

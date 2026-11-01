@@ -6,7 +6,7 @@ import { App } from '@modelcontextprotocol/ext-apps/app-with-deps';
 declare global {
   interface Window {
     ludifyBoot?: () => void;
-    ludifyHost?: { openLink(url: string): unknown };
+    ludifyHost?: { openLink(url: string): unknown; sendMessage(text: string): Promise<unknown>; composer: boolean };
   }
 }
 
@@ -31,7 +31,13 @@ app.ontoolresult = result => {
   }
   started = true;
   document.getElementById('deck')!.textContent = JSON.stringify(deck);
-  window.ludifyHost = { openLink: url => app.openLink({ url }) };
+  // sendMessage posts the picks as the user's message. Claude puts it in the message box for the
+  // user to send (composer), so the deck says to press Enter there; other hosts send it.
+  window.ludifyHost = {
+    openLink: url => app.openLink({ url }),
+    sendMessage: text => app.sendMessage({ role: 'user', content: [{ type: 'text', text }] }),
+    composer: /claude/i.test(app.getHostVersion()?.name ?? ''),
+  };
   window.ludifyBoot!();
 };
 

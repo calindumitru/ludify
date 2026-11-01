@@ -15,7 +15,7 @@ describe('ludify_guide over MCP', () => {
 describe('ludify_render over MCP', () => {
   it('lists a read-only tool that opens the deck player', async () => {
     const c = await client();
-    expect(await checkTool(c)).toBe('ui://ludify/deck-player-v2.html');
+    expect(await checkTool(c)).toBe('ui://ludify/deck-player-v3.html');
   });
 
   it('plays a valid deck: the deck goes to the player in _meta', async () => {

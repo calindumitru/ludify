@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import schema from '@ludify/deck/deck.schema.json' with { type: 'json' };
 import { validateDeck } from '@ludify/deck/validate';
 import { DEFAULT_UI } from '@ludify/deck/ui';
+import { picksMessage } from '@ludify/deck/picks';
 
 const guide = await readFile(new URL('../guide.md', import.meta.url), 'utf8');
 
@@ -41,6 +42,16 @@ describe('the guide (guide.md)', () => {
     expect(guide).toMatch(/skip `ludify_plan`/);
     expect(guide).toContain('"src": {"notes": true}');
     expect(guide).toMatch(/^## Answering a picks message/m);
+  });
+
+  it('shows the picks message exactly as Send to chat writes it', () => {
+    const at = guide.indexOf('\n## Answering a picks message\n');
+    const shown = /```text\n([\s\S]*?)\n```/.exec(guide.slice(at))?.[1];
+    const deck = JSON.parse(guideBlock(guide, 'A whole quick deck'));
+    const summary = deck.worlds.flatMap((w: { cards: { type: string }[] }) => w.cards).find((c: { type: string }) => c.type === 'summary');
+    // Quotes: "After insulating"; Type left open; Old boiler: "Remove it".
+    const sent = picksMessage(deck.worlds, summary.from, { 'decide:0': 1, 'decide:2': 0 }, { intro: DEFAULT_UI.picksIntro, skipped: DEFAULT_UI.skipped });
+    expect(shown, 'update the example in "## Answering a picks message"').toBe(sent);
   });
 
   it('keeps the evidence rules: no points, badges or streaks, never "proven for ADHD"', () => {
