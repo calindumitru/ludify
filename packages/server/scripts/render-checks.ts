@@ -1,9 +1,10 @@
-// What a host sees from ludify_guide and ludify_render, checked over MCP. Both the unit tests (the Worker's fetch
+// What a host sees from ludify_plan, ludify_guide and ludify_render, checked over MCP. Both the unit tests (the Worker's fetch
 // handler in Node) and the smoke test (the Worker in `wrangler dev`) run these.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Client, StreamableHTTPClientTransport, type FetchLike } from '@modelcontextprotocol/client';
 import { partialDeck, validateDeck } from '@ludify/deck/validate';
+import { FIXED, validatePlan } from '../src/plan.ts';
 
 const fixture = (name: string) => new URL(`../../deck/fixtures/${name}`, import.meta.url);
 export const loadDeck = async (name: string) => JSON.parse(await readFile(fixture(name), 'utf8'));
@@ -111,5 +112,68 @@ export async function checkDeckLevel(client: Client) {
   assert.deepEqual(lines, validateDeck(deck).errors);
   assert.match(text, /`attempt: 3`/, 'the error asks for the next attempt');
   assert.equal(result._meta, undefined, 'no deck is sent to the player');
+  return text;
+}
+
+// ludify_plan's sample input: a topic and two extras, one of each type.
+export const PLAN_INPUT = {
+  topic: 'Heat pumps for an old house',
+  extras: [
+    { type: 'choice', q: 'Which country are you in?', opts: ['Romania', 'Italy', 'Elsewhere'] },
+    { type: 'text', q: 'How big is the house, in m²?' },
+  ],
+};
+
+// ludify_plan: a read-only tool that opens the narrowing form, with the plan in _meta for the form
+// and, as text, the same questions and the research method.
+export async function checkPlan(client: Client) {
+  const { tools } = await client.listTools();
+  const tool = tools.find(t => t.name === 'ludify_plan');
+  assert.ok(tool, 'ludify_plan is listed');
+  assert.equal(tool.annotations?.readOnlyHint, true, 'ludify_plan is read-only');
+  const uri = (tool._meta as { ui?: { resourceUri?: string } })?.ui?.resourceUri;
+  assert.match(uri ?? '', /^ui:\/\//, 'ludify_plan names its UI resource');
+
+  const result = await client.callTool({ name: 'ludify_plan', arguments: PLAN_INPUT });
+  const text = textOf(result.content);
+  assert.notEqual(result.isError, true, text);
+  assert.deepEqual((result._meta as { plan?: unknown })?.plan, PLAN_INPUT, 'the plan reaches the form in _meta');
+  for (const q of [FIXED.deciding, FIXED.depth, FIXED.know, ...PLAN_INPUT.extras.map(x => x.q)])
+    assert.ok(text.includes(q), `the text fallback asks "${q}"`);
+  assert.match(text, /Romania \/ Italy \/ Elsewhere/, 'the text fallback lists a choice\'s options');
+  assert.match(text, /primary/, 'the method prefers primary sources');
+  assert.match(text, /peer-reviewed/, 'the method prefers peer-reviewed sources');
+  assert.match(text, /call ludify_guide/, 'the method says to call ludify_guide before writing');
+
+  const { contents } = await client.readResource({ uri: uri! });
+  const page = contents[0] as { mimeType?: string; text?: string };
+  assert.equal(page.mimeType, 'text/html;profile=mcp-app');
+  assert.match(page.text ?? '', /<main id="main"><\/main>/, 'the form page starts empty');
+  return { uri: uri!, text, html: page.text! };
+}
+
+// Bad extras: a tool error listing exactly what validatePlan found, and nothing for the form.
+export async function checkPlanErrors(client: Client) {
+  const extras = [
+    { type: 'slider', q: 'How warm do you keep it?' },
+    { type: 'choice', q: 'Which fuel do you use now?', opts: ['Gas'] },
+    { type: 'text', q: 'Your <b>budget</b>?' },
+    { type: 'text', q: 'Anything else?' },
+  ];
+  for (const bad of [extras, extras.slice(0, 3)]) {
+    const result = await client.callTool({ name: 'ludify_plan', arguments: { topic: PLAN_INPUT.topic, extras: bad } });
+    assert.equal(result.isError, true, 'bad extras are a tool error');
+    const lines = textOf(result.content).split('\n').filter(l => l.startsWith('- ')).map(l => l.slice(2));
+    assert.deepEqual(lines, validatePlan(PLAN_INPUT.topic, bad).errors, 'the error text lists exactly what validatePlan found');
+    assert.equal(result._meta, undefined, 'no plan is sent to the form');
+  }
+  const result = await client.callTool({ name: 'ludify_plan', arguments: { topic: PLAN_INPUT.topic, extras: extras.slice(0, 3) } });
+  const text = textOf(result.content);
+  assert.deepEqual(text.split('\n').filter(l => l.startsWith('- ')), [
+    '- extra 1: `type` must be "choice" or "text".',
+    '- extra 2: `opts` must list 2 to 6 options.',
+    '- extra 3: `q` must be plain text, with no HTML or Markdown.',
+  ], text);
+  assert.match(text, /call ludify_plan again/, 'the error asks for another call');
   return text;
 }
