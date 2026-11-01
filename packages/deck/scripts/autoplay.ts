@@ -17,7 +17,7 @@ if (!file) {
 }
 if (shots) await mkdir(shots, { recursive: true });
 
-type Deck = { lang?: string; worlds: { cards: unknown[]; recap?: unknown }[]; ui?: Record<string, unknown> };
+type Deck = { lang?: string; worlds: { cards: unknown[]; recap?: unknown }[]; ui?: Record<string, unknown>; skipped?: unknown[] };
 
 // The elements the engine itself writes, and the attributes they carry. Deck text may add only
 // strong, code and a[href^="https:"] (the Markdown-lite renderer); anything else is a leak.
@@ -82,6 +82,12 @@ async function run(scheme: 'light' | 'dark') {
   const english = Object.entries(DEFAULT_UI).filter(([k, v]) => typeof v === 'string' && v.length >= 12 && deck.ui?.[k] != null && deck.ui[k] !== v).map(([, v]) => v as string);
   const leaks = async (where: string) => { const t = await p.innerText('body'); for (const s of english) if (t.includes(s)) errs.push(`${scheme}, ${where}: English "${s}" shows in a translated deck`); };
   await check('home'); await leaks('home');
+  // A partial deck names each card it left out, at the top of the map; a whole deck shows no note.
+  const noted = await p.$$eval('main .left-out li', x => x.length);
+  const want = deck.skipped?.length ?? 0;
+  if (noted !== want) errs.push(`${scheme}: the map's note names ${noted} cards left out; the deck skipped ${want}`);
+  if (want && (await p.$eval('main > :first-child', el => el.className)) !== 'left-out') errs.push(`${scheme}: the note on cards left out is not at the top`);
+  if (want) console.log(`${scheme}: note at the top names ${noted} cards left out: "${(await p.innerText('main .left-out')).replace(/\n/g, ' / ')}"`);
 
   const total = deck.worlds.reduce((a, w) => a + w.cards.length, 0);
   const worlds = await p.$$eval('.worlds [data-world]', x => x.length);

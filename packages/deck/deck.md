@@ -117,3 +117,9 @@ when the deck can't be played: a deck-level error, a broken limits card or summa
 `decide` card left in the decision world (or none left that the summary collects), or a world with
 no valid card left. When a `decide` card is dropped, `summary.from` is re-pointed at the cards that
 remain.
+
+`partialDeck(result)` is what `ludify_render` plays when a retry is still invalid: `deck` plus
+`skipped`, one entry per card left out (`world`, `card`, `type`, `h`, and `why`, its errors without
+the place). `skipped` isn't a deck field, so a model-written deck can't carry one. The engine shows
+it as a note at the top of the map: `ui.skippedNote` in the deck's language, then each card's
+heading and why. The reasons are the validator's English sentences.
