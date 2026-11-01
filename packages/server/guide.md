@@ -85,8 +85,8 @@ These come from the engagement evidence Ludify is built on. Follow every one.
   one per tag at most.
 - **No points, badges or streaks** as the reason to keep going, and no celebration text. The
   engine already gives a little XP after an explanation; don't add your own rewards.
-- **Never write that something is "proven for ADHD"**, or proven for anyone, unless a study
-  directly shows it. Say "evidence suggests" and grade the claim.
+- **Never write that something is "proven for ADHD".** Say "evidence suggests" and grade the
+  claim. Call any other claim proven only when a study directly shows it.
 - **The reader decides.** Present the evidence and its limits; leave the call to the `decide`
   cards.
 
