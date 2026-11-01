@@ -1,2 +1,3 @@
 src/player.gen.ts
 .wrangler/
+src/guide.gen.ts

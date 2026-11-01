@@ -1,9 +1,11 @@
-// The Ludify MCP server: one stateless McpServer per request, with `ludify_render` and the deck
-// player it opens. Nothing is stored; the deck travels to the player inside the tool result.
+// The Ludify MCP server: one stateless McpServer per request, with `ludify_guide` (the
+// deck-writing manual), `ludify_render` and the deck player it opens. Nothing is stored; the deck
+// travels to the player inside the tool result.
 import { McpServer, createMcpHandler, type CallToolResult } from '@modelcontextprotocol/server';
 import { RESOURCE_MIME_TYPE, registerAppResource, registerAppTool } from '@modelcontextprotocol/ext-apps/server';
 import { validateDeck, type Deck } from '@ludify/deck/validate';
 import * as z from 'zod';
+import { GUIDE } from './guide.gen.ts';
 import { PLAYER_HTML } from './player.gen.ts';
 
 // Hosts cache a UI resource by its URI, so a player change that old pages can't take bumps it.
@@ -52,9 +54,18 @@ export function createServer(): McpServer {
     contents: [{ uri: PLAYER_URI, mimeType: RESOURCE_MIME_TYPE, text: PLAYER_HTML, _meta: { ui: { csp: { resourceDomains: FONT_ORIGINS } } } }],
   }));
 
+  server.registerTool('ludify_guide', {
+    title: 'How to write a Ludify deck',
+    description: 'Returns the manual for writing a Ludify deck: the card types, the writing and source rules, depth and structure, '
+      + 'and the deck JSON Schema. Call it right before you write a deck, also when the research is already in the chat, '
+      + 'in an attached file or pasted in (then skip ludify_plan). It also says how to answer a "My Ludify picks" message.',
+    annotations: { title: 'How to write a Ludify deck', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, async () => ({ content: [{ type: 'text', text: GUIDE }] }));
+
   registerAppTool(server, 'ludify_render', {
     title: 'Play a Ludify deck',
-    description: 'Checks a Ludify deck (JSON) and plays it inline as cards the user can tap through; if the deck has problems, returns the list to fix.',
+    description: 'Checks a Ludify deck (JSON) and plays it inline as cards the user can tap through; if the deck has problems, returns the list to fix. '
+      + 'Call ludify_guide first and write the deck to its format.',
     inputSchema: z.object({
       deck: z.unknown().describe('The deck: a JSON object with `lang`, `ui` and `worlds`, written to the format ludify_guide gives.'),
     }),

@@ -1,9 +1,9 @@
 // Smoke test: starts the Worker in `wrangler dev` (the real Workers runtime, locally) and calls
-// ludify_render over MCP with the quick fixture deck and with a broken copy of it.
+// ludify_guide, then ludify_render with the quick fixture deck and with a broken copy of it, over MCP.
 // Usage: node scripts/smoke.ts [port]   (default 8791; run `npm run build` first)
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { checkInvalid, checkTool, checkValid, connect } from './render-checks.ts';
+import { checkGuide, checkInvalid, checkTool, checkValid, connect } from './render-checks.ts';
 
 const port = Number(process.argv[2] ?? 8791);
 const base = `http://127.0.0.1:${port}`;
@@ -32,9 +32,12 @@ try {
   await ready();
   console.log(`wrangler dev up on ${base} in ${Date.now() - t0} ms`);
   const client = await connect(`${base}/mcp`);
+  let t = Date.now();
+  const guide = await checkGuide(client);
+  console.log(`ok: ludify_guide returns the manual (${Date.now() - t} ms): ${guide.length} characters`);
   const uri = await checkTool(client);
   console.log(`ok: ludify_render is listed, read-only, opens ${uri}`);
-  let t = Date.now();
+  t = Date.now();
   const { html } = await checkValid(client, uri);
   console.log(`ok: valid deck plays (${Date.now() - t} ms); player page ${html.length} bytes`);
   t = Date.now();
