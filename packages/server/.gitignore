@@ -1,3 +1,4 @@
 src/player.gen.ts
 .wrangler/
 src/guide.gen.ts
+src/form.gen.ts

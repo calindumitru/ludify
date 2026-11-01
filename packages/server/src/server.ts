@@ -1,15 +1,18 @@
-// The Ludify MCP server: one stateless McpServer per request, with `ludify_guide` (the
-// deck-writing manual), `ludify_render` and the deck player it opens. Nothing is stored; the deck
-// travels to the player inside the tool result.
+// The Ludify MCP server: one stateless McpServer per request, with `ludify_plan` and the narrowing
+// form it opens, `ludify_guide` (the deck-writing manual), `ludify_render` and the deck player it
+// opens. Nothing is stored; the plan and the deck travel to their pages inside the tool result.
 import { McpServer, createMcpHandler, type CallToolResult } from '@modelcontextprotocol/server';
 import { RESOURCE_MIME_TYPE, registerAppResource, registerAppTool } from '@modelcontextprotocol/ext-apps/server';
 import { partialDeck, validateDeck, type Deck } from '@ludify/deck/validate';
 import * as z from 'zod';
+import { FORM_HTML } from './form.gen.ts';
 import { GUIDE } from './guide.gen.ts';
+import { planText, validatePlan } from './plan.ts';
 import { PLAYER_HTML } from './player.gen.ts';
 
 // Hosts cache a UI resource by its URI, so a player change that old pages can't take bumps it.
 export const PLAYER_URI = 'ui://ludify/deck-player-v3.html';
+export const FORM_URI = 'ui://ludify/plan-form-v1.html';
 
 // The engine's stylesheet loads its fonts from Google Fonts; the host's sandbox allows only these.
 const FONT_ORIGINS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
@@ -59,12 +62,50 @@ export async function render(input: unknown, attempt = 1): Promise<CallToolResul
   };
 }
 
+// ludify_plan: checks the model's extras like a deck; valid ones go to the form in `_meta.plan`,
+// with the questions and the research method as text for the model.
+export function plan(topic: unknown, extras: unknown): CallToolResult {
+  const result = validatePlan(topic, extras);
+  if (!result.plan) {
+    return {
+      isError: true,
+      content: [{
+        type: 'text',
+        text: 'The narrowing form was not shown because of these problems:\n'
+          + bullets(result.errors)
+          + '\nFix every one and call ludify_plan again, or leave `extras` out to ask only the three fixed questions.',
+      }],
+    };
+  }
+  return { content: [{ type: 'text', text: planText(result.plan) }], _meta: { plan: result.plan } };
+}
+
 export function createServer(): McpServer {
   const server = new McpServer({ name: 'ludify', version: '0.1.0' });
 
   registerAppResource(server, 'Ludify deck player', PLAYER_URI, { description: 'Plays a Ludify deck.' }, async () => ({
     contents: [{ uri: PLAYER_URI, mimeType: RESOURCE_MIME_TYPE, text: PLAYER_HTML, _meta: { ui: { csp: { resourceDomains: FONT_ORIGINS } } } }],
   }));
+
+  registerAppResource(server, 'Ludify narrowing form', FORM_URI, { description: 'Asks what the research should cover.' }, async () => ({
+    contents: [{ uri: FORM_URI, mimeType: RESOURCE_MIME_TYPE, text: FORM_HTML, _meta: { ui: { csp: { resourceDomains: FONT_ORIGINS } } } }],
+  }));
+
+  registerAppTool(server, 'ludify_plan', {
+    title: 'Plan a Ludify deck',
+    description: 'Call it first when the user asks for a Ludify deck on a topic that still needs researching. '
+      + 'Shows the narrowing form (what they are deciding, how deep to go, what they already know, and up to three questions you add for this topic), '
+      + 'whose answers come back as a "My Ludify plan" message; returns the same questions as text for hosts that can\'t show the form, and the research method. '
+      + 'Skip it when the research is already in the chat, attached or pasted: go to ludify_guide.',
+    inputSchema: z.object({
+      topic: z.string().describe('The topic in a few words, in the user\'s language.'),
+      extras: z.unknown().optional().describe('Up to three questions about this topic that would change the research (e.g. country, budget, house size), '
+        + 'in the user\'s language, plain text: a JSON list of {"type": "choice", "q": "...", "opts": ["...", "..."]} (2 to 6 options) '
+        + 'or {"type": "text", "q": "..."}. Leave it out when the three fixed questions are enough.'),
+    }),
+    annotations: { title: 'Plan a Ludify deck', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    _meta: { ui: { resourceUri: FORM_URI } },
+  }, async ({ topic, extras }) => plan(topic, extras));
 
   server.registerTool('ludify_guide', {
     title: 'How to write a Ludify deck',

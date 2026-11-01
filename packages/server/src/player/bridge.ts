@@ -2,6 +2,7 @@
 // for ludify_render's result, puts the deck into the page's JSON block and starts the engine.
 // The deck is data: it reaches the engine only as JSON text, never as markup or code.
 import { App } from '@modelcontextprotocol/ext-apps/app-with-deps';
+import { fillsComposer } from '../host.ts';
 
 declare global {
   interface Window {
@@ -36,7 +37,7 @@ app.ontoolresult = result => {
   window.ludifyHost = {
     openLink: url => app.openLink({ url }),
     sendMessage: text => app.sendMessage({ role: 'user', content: [{ type: 'text', text }] }),
-    composer: /claude/i.test(app.getHostVersion()?.name ?? ''),
+    composer: fillsComposer(app),
   };
   window.ludifyBoot!();
 };

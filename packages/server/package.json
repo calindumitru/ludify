@@ -3,11 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-player.ts && node scripts/build-guide.ts",
+    "build": "node scripts/build-player.ts && node scripts/build-form.ts && node scripts/build-guide.ts",
     "typecheck": "npm run build && tsc --noEmit",
     "test": "npm run build && vitest run",
     "dev": "npm run build && wrangler dev --port 8791",
-    "smoke": "npm run build && node scripts/smoke.ts && node scripts/player-check.ts"
+    "smoke": "npm run build && node scripts/smoke.ts && node scripts/player-check.ts && node scripts/form-check.ts"
   },
   "dependencies": {
     "@ludify/deck": "*",

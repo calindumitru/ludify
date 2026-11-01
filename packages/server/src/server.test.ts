@@ -1,10 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import worker from './index.ts';
-import { checkDeckLevel, checkGuide, checkInvalid, checkPartial, checkTool, checkValid, connect, loadDeck } from '../scripts/render-checks.ts';
+import { checkDeckLevel, checkGuide, checkPlan, checkPlanErrors, checkInvalid, checkPartial, checkTool, checkValid, connect, loadDeck } from '../scripts/render-checks.ts';
 import { render } from './server.ts';
 
 // The Worker's own fetch handler, called in-process: the same requests `wrangler dev` would get.
 const client = () => connect('http://ludify.test/mcp', (url, init) => worker.fetch(new Request(url, init)));
+
+describe('ludify_plan over MCP', () => {
+  it('opens the narrowing form, with the questions and the research method as text', async () => {
+    const { uri, text } = await checkPlan(await client());
+    expect(uri).toBe('ui://ludify/plan-form-v1.html');
+    expect(text).toMatch(/^The narrowing form for "Heat pumps for an old house" is showing\./);
+  });
+
+  it('returns a tool error listing each problem of bad extras', async () => {
+    expect(await checkPlanErrors(await client())).toMatch(/^The narrowing form was not shown because of these problems:\n- /);
+  });
+
+  it('asks only the three fixed questions when there are no extras', async () => {
+    const result = await (await client()).callTool({ name: 'ludify_plan', arguments: { topic: 'Heat pumps' } });
+    expect(result.isError).toBeFalsy();
+    expect(result._meta).toEqual({ plan: { topic: 'Heat pumps', extras: [] } });
+  });
+});
 
 describe('ludify_guide over MCP', () => {
   it('returns the manual, guide.md, as text', async () => {

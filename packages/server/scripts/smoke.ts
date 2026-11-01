@@ -1,10 +1,10 @@
 // Smoke test: starts the Worker in `wrangler dev` (the real Workers runtime, locally) and calls
-// ludify_guide, then ludify_render over MCP: the quick fixture deck; a broken copy on attempt 1 and,
+// ludify_plan (a plan with extras, then bad extras), ludify_guide, then ludify_render over MCP: the quick fixture deck; a broken copy on attempt 1 and,
 // with its deck-level problem, on attempt 2; and a deck with broken cards on attempt 2 (partial).
 // Usage: node scripts/smoke.ts [port]   (default 8791; run `npm run build` first)
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { checkDeckLevel, checkGuide, checkInvalid, checkPartial, checkTool, checkValid, connect } from './render-checks.ts';
+import { checkDeckLevel, checkGuide, checkInvalid, checkPlan, checkPlanErrors, checkPartial, checkTool, checkValid, connect } from './render-checks.ts';
 
 const port = Number(process.argv[2] ?? 8791);
 const base = `http://127.0.0.1:${port}`;
@@ -34,6 +34,12 @@ try {
   console.log(`wrangler dev up on ${base} in ${Date.now() - t0} ms`);
   const client = await connect(`${base}/mcp`);
   let t = Date.now();
+  const plan = await checkPlan(client);
+  console.log(`ok: ludify_plan opens ${plan.uri} (${Date.now() - t} ms); form page ${plan.html.length} bytes; text fallback and method ${plan.text.length} characters`);
+  t = Date.now();
+  const planErrors = await checkPlanErrors(client);
+  console.log(`ok: bad extras are a tool error (${Date.now() - t} ms):\n${planErrors.replace(/^/gm, '    ')}`);
+  t = Date.now();
   const guide = await checkGuide(client);
   console.log(`ok: ludify_guide returns the manual (${Date.now() - t} ms): ${guide.length} characters`);
   const uri = await checkTool(client);
