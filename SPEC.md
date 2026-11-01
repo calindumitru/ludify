@@ -113,8 +113,9 @@ search; Ludify supplies the method and the deck.
 
 The engine moves into this repo from the Owner's skills repo (`calindumitru/skills`, folder
 `skills/fun-briefs/`), and lives only here: Ludify is meant to replace the `fun-briefs` skill, so
-there's no shared package. Until Ludify's full flow works (milestone 3), fixes go into both copies;
-then the skill is deleted, after its evidence table moves to a home `fun-grilling` can link to.
+there's no shared package. The skill was retired on 2026-11-01 (calindumitru/skills#19), earlier than
+the planned milestone 3; its evidence table now lives in `fun-grilling`, and Ludify keeps its own
+copy in `docs/evidence.md`.
 What it brings:
 
 - `assets/deck/index.html` — the engine (layout, card plays, XP, saved progress, calm mode,
@@ -226,7 +227,7 @@ Full table with sources: [docs/evidence.md](docs/evidence.md). In short:
 - ~~**Who is it for first?**~~ Decision-makers, desktop first; see §2.
 - ~~**Where do the narrowing questions live?**~~ A Ludify form in the iframe, with a text fallback; see §3, §5.
 - ~~**Hosting:**~~ a stateless Cloudflare Worker with the official MCP SDK, the landing page on Cloudflare Pages; see §3.
-- ~~**Engine ownership:**~~ moves into this repo, no shared package; `fun-briefs` is retired after milestone 3; see §4.
+- ~~**Engine ownership:**~~ moves into this repo, no shared package; `fun-briefs` was retired on 2026-11-01; see §4.
 - ~~**Language:**~~ decks in the user's language, with translatable UI strings; see §4.
 
 Still open, for a later launch effort (none of them changes how v1 is built):
@@ -265,8 +266,7 @@ chatgpt.com in a browser, mobile in both hosts, and Claude Free's one-connector 
 2. **Deck schema + safe engine:** the engine moved into this repo, JSON Schema, validator (with the
    retry and partial-deck rules), engine reading JSON, `autoplay.mjs` in CI.
 3. **Full flow:** `ludify_plan` → form → research → `ludify_guide` → `ludify_render` → Send to
-   chat, plus decks from existing research, in Claude with a ChatGPT smoke test. Then the
-   `fun-briefs` skill is retired.
+   chat, plus decks from existing research, in Claude with a ChatGPT smoke test.
 4. **Landing page** with the rewritten ADHD example deck and "Add to" instructions for both hosts.
 5. **Public launch:** privacy notice, directory submissions, the launch questions in §8.
 
