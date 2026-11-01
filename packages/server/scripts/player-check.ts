@@ -1,5 +1,6 @@
 // Plays ludify_render's result in the deck player inside a stand-in host (scripts/fake-host.ts),
-// in headless Chromium at phone width: the deck shows, a link goes through the host, a broken deck
+// in headless Chromium at phone width: the deck shows, a link goes through the host, Send to chat
+// on the summary card posts the picks to the host as the user's message, a broken deck
 // shows a short note, a partial deck (attempt 2) names its cards left out at the top, and nothing
 // errors or scrolls sideways. Screenshots: dist/shots/player/.
 // Usage: node scripts/player-check.ts   (run `npm run build` first)
@@ -71,6 +72,30 @@ const ok = await render(deck);
   const opened = await page.evaluate(() => window.opened);
   if (opened[0] !== href) errs.push(`valid: link ${href} did not go through the host (opened: ${JSON.stringify(opened)})`);
   console.log(`valid: ${worlds} worlds shown ${ms} ms after the host started; width home ${home}, card ${card}; link through host: ${opened[0] === href}`);
+
+  // The decision world: pick the first option on each decision, then Send to chat on the summary
+  // card posts the picks to the host as the user's message. This host sends it (it is not Claude),
+  // so the note says it was sent.
+  await frame.locator('[data-act="home"]').first().click();
+  const di = deck.worlds.findIndex((w: { cards: { type: string }[] }) => w.cards.some(c => c.type === 'summary'));
+  await frame.locator(`.world[data-world="${di}"]`).click();
+  const want = ['My Ludify picks:'];
+  for (const c of deck.worlds[di].cards as { type: string; short?: string; opts?: string[] }[]) {
+    if (c.type === 'decide') { await frame.locator('[data-decide="0"]').click(); want.push(`- ${c.short}: ${c.opts![0]}`); }
+    if (c.type === 'summary') break;
+    await frame.locator('#next').click();
+  }
+  await frame.locator('[data-act="send"]').click();
+  await page.waitForFunction(() => window.messages.length > 0, null, { timeout: 5000 }).catch(() => {});
+  const messages = await page.evaluate(() => window.messages);
+  const expected = { role: 'user', content: [{ type: 'text', text: want.join('\n') }] };
+  if (JSON.stringify(messages) !== JSON.stringify([expected])) errs.push(`valid: Send to chat gave the host ${JSON.stringify(messages)}, expected ${JSON.stringify([expected])}`);
+  await frame.waitForFunction(() => document.getElementById('sent')?.textContent, null, { timeout: 2000 }).catch(() => {});
+  const note = await frame.locator('#sent').innerText();
+  if (note !== 'Sent to the chat ✓') errs.push(`valid: the note after Send to chat reads "${note}"`);
+  const summary = await sideways(frame, 'valid summary');
+  await page.screenshot({ path: `${shots}/summary.png` });
+  console.log(`valid: Send to chat gave the host ${JSON.stringify(messages[0])}; note "${note}"; width ${summary}`);
   await page.close();
 }
 

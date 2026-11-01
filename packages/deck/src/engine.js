@@ -5,6 +5,7 @@
 // numbers checked with num() before they go into markup or attributes.
 import { formatValue } from './format.ts';
 import { escapeHtml as esc, httpsUrl, linkHtml, renderMarkdown as md } from './markdown.ts';
+import { picksLines, picksMessage } from './picks.ts';
 import { deckLang, fill, mergeUi } from './ui.ts';
 import { pickVoice } from './voice.ts';
 import { reward } from './xp.ts';
@@ -211,16 +212,25 @@ import { reward } from './xp.ts';
     const opts = list(c.opts).map((o, i) => `<button class="opt" data-decide="${i}" aria-pressed="${a === i}"><span class="k">${key(i)}</span><span>${md(o)}</span>${i === c.lean ? `<span class="lean">${T('lean')}</span>` : ''}</button>`).join('');
     return head(c) + body(c) + `<div class="opts">${opts}</div>` + (a != null ? fb('info', U.noted, list(c.after)[a] || U.changeAny) : '') + more(c);
   };
-  // summary: the picks from the decide cards it names, as plain text.
+  // summary: the picks from the decide cards it names, as plain text. Inside a host that takes
+  // messages, one button sends them to the chat; outside one (the built file) the text is all.
+  const picksWords = () => ({ intro: U.picksIntro, skipped: U.skipped });
+  const canSend = () => typeof window.ludifyHost?.sendMessage === 'function';
   P.summary = c => {
-    const lines = list(c.from).map(ref => {
-      const [wk, ci] = list(ref), wi = W.findIndex(w => w.id === wk), cc = W[wi]?.cards[ci];
-      if (!cc) return null;
-      const a = S.ans[id(wi, ci)], opt = Number.isInteger(a) ? list(cc.opts)[a] : null;
-      return `${cc.short ?? cc.h}: ${opt == null ? U.skipped : String(opt).replace(/\*\*/g, '')}`;
-    }).filter(x => x != null).join('\n');
-    return head(c) + body(c) + `<div class="picks" id="picks">${esc(lines)}</div><button class="go" data-act="copy">${T('copy')}</button>` + more(c);
+    const lines = picksLines(W, c.from, S.ans, picksWords()).join('\n');
+    const send = canSend() ? `<button class="go" data-act="send">${T('send')}</button><p class="sent" id="sent" aria-live="polite"></p>` : '';
+    return head(c) + body(c) + `<div class="picks" id="picks">${esc(lines)}</div>` + send + more(c);
   };
+  // Posts the picks as a user message through the host. Claude puts it in the message box rather
+  // than sending it (ludifyHost.composer), so the note under the button says to press Enter there.
+  function sendPicks(el, c) {
+    const host = window.ludifyHost, say = t => { const s = document.getElementById('sent'); if (s) s.textContent = t; };
+    el.disabled = true; say('');
+    Promise.resolve()
+      .then(() => host.sendMessage(picksMessage(W, c.from, S.ans, picksWords())))
+      .then(r => say(isMap(r) && r.isError ? U.sendFailed : host.composer ? U.sendEnter : U.sent), () => say(U.sendFailed))
+      .finally(() => { el.disabled = false; });
+  }
   const pick = arr => { const a = list(arr); return a[Math.floor(Math.random() * a.length)]; };
 
   // ---------- world end ----------
@@ -316,11 +326,7 @@ import { reward } from './xp.ts';
     if (d.multi != null && !S.ans[k]) { const sel = S.tmp.sel || (S.tmp.sel = []); const i = +d.multi; sel.includes(i) ? sel.splice(sel.indexOf(i), 1) : sel.push(i); return redraw(); }
     if (d.act === 'lock-multi') { S.ans[k] = S.tmp.sel.slice(); complete(S.w, S.c, reward(c, S.ans[k])); return redraw(); }
     if (d.decide != null) { const first = S.ans[k] == null; S.ans[k] = +d.decide; if (first) complete(S.w, S.c, reward(c, S.ans[k])); else save(); return redraw(); }
-    if (d.act === 'copy') {
-      const t = document.getElementById('picks').textContent;
-      const ok = () => { el.textContent = U.copied; setTimeout(() => el.textContent = U.copy, 1500); };
-      try { navigator.clipboard.writeText(t).then(ok, () => {}); } catch {}
-    }
+    if (d.act === 'send' && c && canSend()) return sendPicks(el, c);
   });
   function redraw() {
     const c = W[S.w].cards[S.c], k = id(S.w, S.c);

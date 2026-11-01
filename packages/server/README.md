@@ -14,7 +14,7 @@ as is.
   writes it into `src/guide.gen.ts` (not committed), and `src/guide.test.ts` fails when the schema,
   the English strings or the example deck in it drift from `@ludify/deck`.
 - `ludify_render(deck, attempt?)`: checks the deck with `validateDeck` from `@ludify/deck`. A valid deck
-  comes back with `_meta.deck`, and the host opens the deck player (`ui://ludify/deck-player-v2.html`),
+  comes back with `_meta.deck`, and the host opens the deck player (`ui://ludify/deck-player-v3.html`),
   which plays it inline. On attempt 1 (the default), an invalid deck comes back as a tool error listing
   every problem, one per line, pointing to `ludify_guide` and asking for `attempt: 2`. The server
   keeps nothing between calls, so the model counts the attempts. From attempt 2 on, a deck with
@@ -43,5 +43,6 @@ From the repo root:
 - `npm run smoke`: `scripts/smoke.ts` (the Worker in `wrangler dev`, called over MCP: `ludify_guide`,
   then `ludify_render` with `packages/deck/fixtures/quick-deck.json`, a broken copy on attempts 1 and 2, and
   `partial-deck.json` on attempt 2) and `scripts/player-check.ts` (the
-  results, the partial deck too, played in a stand-in host at 375 px; screenshots in `packages/server/dist/shots/player/`).
+  results, the partial deck too, played in a stand-in host at 375 px, with Send to chat posting
+  the picks to the host; screenshots in `packages/server/dist/shots/player/`).
 - `npm test`, `npm run typecheck`: unit tests call the Worker's fetch handler in-process.

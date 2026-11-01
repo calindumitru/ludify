@@ -148,9 +148,19 @@ files itself; you read them.
 
 ## Answering a picks message
 
-At the end of a deck the user can send their picks to the chat: a message that starts "My Ludify
-picks" and lists each decision's `short` name with the option they chose. Answer it in the deck's
-language:
+At the end of a deck the summary card's **Send to chat** button posts the user's picks as their
+message: the deck's `picksIntro` line ("My Ludify picks:" in English, translated in the deck's
+`ui`), then one line per decision, `- <short>: <option chosen>`, with the deck's `skipped` word for
+a decision left open. For example, from the quick deck below:
+
+```text
+My Ludify picks:
+- Quotes: After insulating
+- Type: (skipped)
+- Old boiler: Remove it
+```
+
+Answer it in the deck's language:
 
 1. Say what follows from the picks: what to do next for each, what to look out for, and where
    two picks pull against each other. Where a pick differs from what the research leaned to, say
@@ -229,8 +239,11 @@ language.
   "skipped": "(skipped)",
   "skippedNote": "These cards had a problem, so they are left out:",
   "skippedWhy": "this card broke a deck rule",
-  "copy": "Copy",
-  "copied": "Copied ✓",
+  "send": "Send to chat",
+  "sent": "Sent to the chat ✓",
+  "sendEnter": "It is in your message box: press Enter to send.",
+  "sendFailed": "Couldn't send it. Try again.",
+  "picksIntro": "My Ludify picks:",
   "whyRight": "right first try",
   "whyTried": "for trying",
   "whyClose": "close guess",
@@ -638,8 +651,11 @@ it, where `summary.from` points, the indexes inside a card, and 64 KB at most.
         "lean": { "$ref": "#/$defs/plain" },
         "noted": { "$ref": "#/$defs/plain" },
         "changeAny": { "$ref": "#/$defs/plain" },
-        "copy": { "$ref": "#/$defs/plain" },
-        "copied": { "$ref": "#/$defs/plain" },
+        "send": { "$ref": "#/$defs/plain" },
+        "sent": { "$ref": "#/$defs/plain" },
+        "sendEnter": { "$ref": "#/$defs/plain" },
+        "sendFailed": { "$ref": "#/$defs/plain" },
+        "picksIntro": { "$ref": "#/$defs/plain" },
         "whyRight": { "$ref": "#/$defs/plain" },
         "whyTried": { "$ref": "#/$defs/plain" },
         "whyClose": { "$ref": "#/$defs/plain" },

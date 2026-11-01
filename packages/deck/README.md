@@ -29,6 +29,9 @@ Changed since, for model-written decks:
   The page takes the deck's `lang`, and read-aloud picks a voice for it (`src/voice.ts`).
 - `info` cards show a source tag; "Start over" asks with a second tap instead of `confirm()`.
 - `challenge` cards and `decide.ticket` are gone.
+- The `summary` card sends the picks to the chat (`src/picks.ts`) through the host's
+  `ludifyHost.sendMessage` instead of copying them (the clipboard is blocked in Claude); outside a
+  host it shows them as text only.
 
 ## Inside a host
 
@@ -48,8 +51,9 @@ From the repo root:
   partial deck built from `partial-deck.json`, a Romanian deck with two broken cards) and plays
   every card in headless Chromium, light and dark. It fails on a page error, a stuck card, markup
   the engine doesn't write, a request to anywhere but the fonts, a `confirm()` call, English showing
-  in a translated deck, a partial deck without its note at the top, or a page wider than 400 px. It also taps "Start over" and follows a link
-  through a stand-in host. Screenshots land in `packages/deck/dist/shots/<deck>/`. Needs
+  in a translated deck, a partial deck without its note at the top, or a page wider than 400 px. It also taps "Start over", follows a link
+  through a stand-in host, and presses Send to chat on the summary card there, checking the
+  message it posts (no button in a plain browser). Screenshots land in `packages/deck/dist/shots/<deck>/`. Needs
   `npx playwright install chromium` once.
 - `node packages/deck/scripts/build.ts <deck.json> <out.html>`: builds any deck. With `--partial`
   first, builds what `ludify_render` plays after a failed retry: the valid cards and the note.
