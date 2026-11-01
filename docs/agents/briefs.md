@@ -53,4 +53,6 @@ PR and the issue, so include every figure you measured.
 
 There's no `scripts/ship.sh` yet. After the review passes, the main session
 runs `gh pr checks <pr> --watch --fail-fast && gh pr merge <pr> --squash`,
-then watches the deploy run once the repo has one (milestone 1 adds it).
+then watches the deploy: CI's `deploy` job on `main`, which ends by checking
+that `/version` on the Worker shows its commit (`docs/building-slices.md` →
+*Repo-specific*, Deploy and live checks).
