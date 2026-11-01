@@ -8,9 +8,11 @@ on:
 permissions:
   contents: read
 
+# A newer push to a pull request cancels the older run. On main, runs queue instead, so a deploy
+# is never cut off halfway.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -25,6 +27,9 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      # Bundles the Worker the way the deploy job does, without uploading it or any credentials.
+      - run: npx wrangler deploy --dry-run --outdir dist/worker
+        working-directory: packages/server
       - run: npx playwright install --with-deps chromium
       - run: npm run autoplay
       # The MCP server in `wrangler dev` (local, no Cloudflare account) called over MCP, then the
@@ -38,3 +43,70 @@ jobs:
             packages/deck/dist/shots/
             packages/server/dist/shots/
           if-no-files-found: ignore
+
+  # Every push to main that passes `check` goes live on Cloudflare at
+  # https://ludify.<account subdomain>.workers.dev, then /version must show this commit.
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: deploy-worker
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      # Only main's newest commit deploys, so re-running an old run can't roll the Worker back.
+      - id: head
+        run: |
+          head=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$head" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::main is at $head now, so $GITHUB_SHA is not deployed; the run for $head deploys if its checks pass."
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.head.outputs.current == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - if: steps.head.outputs.current == 'true'
+        run: npm ci
+      # Writes the deck player into src/player.gen.ts, which the Worker imports.
+      - if: steps.head.outputs.current == 'true'
+        run: npm run build -w @ludify/server
+      # The secrets reach this step only, not `npm ci` or the build.
+      - if: steps.head.outputs.current == 'true'
+        name: wrangler deploy
+        working-directory: packages/server
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-output.ndjson
+          WRANGLER_SEND_METRICS: 'false'
+        run: npx wrangler deploy --var "COMMIT:$GITHUB_SHA"
+      # A new workers.dev subdomain can take a few minutes to answer, so this tries for 5.
+      - if: steps.head.outputs.current == 'true'
+        name: Check /version shows this commit
+        run: |
+          url=$(jq -r 'select(.type == "deploy") | .targets[]? | select(endswith(".workers.dev"))' \
+            "$RUNNER_TEMP/wrangler-output.ndjson" | head -n 1)
+          if [ -z "$url" ]; then
+            echo "::error::wrangler reported no workers.dev URL for the deploy."
+            exit 1
+          fi
+          echo "Worker: $url (MCP at $url/mcp)" >> "$GITHUB_STEP_SUMMARY"
+          got=""
+          for _ in $(seq 1 30); do
+            got=$(curl -fsS --max-time 10 "$url/version" | jq -r '.commit') || got=""
+            if [ "$got" = "$GITHUB_SHA" ]; then
+              echo "$url/version shows $got" | tee -a "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::$url/version shows '$got', not $GITHUB_SHA."
+          exit 1

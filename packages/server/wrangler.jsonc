@@ -1,9 +1,14 @@
 // The Ludify MCP server as a Cloudflare Worker: stateless, no bindings, no storage.
-// Local: `npm run dev -w @ludify/server` serves http://localhost:8791/mcp. Deploying is a later slice.
+// Local: `npm run dev -w @ludify/server` serves http://localhost:8791/mcp.
+// Deployed by the `deploy` job in .github/workflows/ci.yml on every push to main, at
+// https://ludify.<account subdomain>.workers.dev, with `--var COMMIT:<sha>` for /version.
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "ludify",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  // No per-version preview URLs: an old version must not stay reachable after a fix ships.
+  "preview_urls": false
 }
