@@ -64,8 +64,14 @@ evidence, unverified facts, what depends on their situation.
 _Avoid_: Disclaimer, caveat card
 
 **Decision world**:
-A deck's last world: only decision cards, then the summary card that sends the picks to the chat.
+A deck's last world when the user is deciding something: only decision cards, then the summary card
+that sends the picks to the chat.
 _Avoid_: Final level, boss level
+
+**Check-yourself world**:
+A deck's last world when the user is only learning, in place of the decision world: recall cards,
+then the summary card that sends the threads the user wants to dig into to the chat.
+_Avoid_: Test, exam, final quiz
 
 **Deck player**:
 The page Ludify's server gives the host to show a deck inline: the deck engine plus a small bridge
