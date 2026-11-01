@@ -1,3 +1,6 @@
 node_modules/
 dist/
 .src-*/
+
+# Agent worktrees and local Claude Code state
+.claude/
