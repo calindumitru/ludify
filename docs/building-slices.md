@@ -132,7 +132,7 @@ points at the code the owner saw and the build is checked against it.
     with `packages/deck/fixtures/quick-deck.json`, a broken copy of it on attempts 1 and 2, and
     `partial-deck.json` on attempt 2,
     then plays the result in the deck player inside a stand-in host at
-    375 px; its screenshots land in `packages/server/dist/shots/player/`.
+    375 px, up to Send to chat on the summary card; its screenshots land in `packages/server/dist/shots/player/`.
 - **Run the app locally:** `npm run build:example -w @ludify/deck`, then open
   `packages/deck/dist/adhd-learning-deck.html` in a browser (a file, no
   server). Build any deck with

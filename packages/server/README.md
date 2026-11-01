@@ -43,5 +43,6 @@ From the repo root:
 - `npm run smoke`: `scripts/smoke.ts` (the Worker in `wrangler dev`, called over MCP: `ludify_guide`,
   then `ludify_render` with `packages/deck/fixtures/quick-deck.json`, a broken copy on attempts 1 and 2, and
   `partial-deck.json` on attempt 2) and `scripts/player-check.ts` (the
-  results, the partial deck too, played in a stand-in host at 375 px; screenshots in `packages/server/dist/shots/player/`).
+  results, the partial deck too, played in a stand-in host at 375 px, with Send to chat posting
+  the picks to the host; screenshots in `packages/server/dist/shots/player/`).
 - `npm test`, `npm run typecheck`: unit tests call the Worker's fetch handler in-process.

@@ -1,7 +1,8 @@
 // Plays every card of a built deck in headless Chromium, light and dark, and fails on any
 // page error, stuck card, card left unplayed, world that doesn't end on its recap, or markup the
 // deck's text should never produce.
-// Also checks "Start over" (two taps, no confirm()), links through the host, and the deck's language.
+// Also checks "Start over" (two taps, no confirm()), links through the host, Send to chat on the
+// summary card (the message posted to a stand-in host; no button without one), and the deck's language.
 // Ported from calindumitru/skills @ f308ebc (skills/fun-briefs/scripts/autoplay.mjs).
 // Usage: node scripts/autoplay.ts <built.html> [shots-dir]
 import { mkdir } from 'node:fs/promises';
@@ -18,6 +19,8 @@ if (!file) {
 if (shots) await mkdir(shots, { recursive: true });
 
 type Deck = { lang?: string; worlds: { cards: unknown[]; recap?: unknown }[]; ui?: Record<string, unknown>; skipped?: unknown[] };
+type Card = { type?: string; h?: string; short?: string; opts?: string[] };
+type Summary = Card & { from?: unknown[] };
 
 // The elements the engine itself writes, and the attributes they carry. Deck text may add only
 // strong, code and a[href^="https:"] (the Markdown-lite renderer); anything else is a leak.
@@ -45,12 +48,17 @@ const errs: string[] = [];
 async function run(scheme: 'light' | 'dark') {
   const ctx = await b.newContext({ viewport: { width: 400, height: 860 }, colorScheme: scheme });
   ctx.setDefaultTimeout(5000);
-  // confirm() is blocked in both hosts: count calls. In dark, act as an MCP Apps host for links.
+  // confirm() is blocked in both hosts: count calls. In dark, act as an MCP Apps host for links and
+  // messages, one that puts a message in the composer as Claude does.
   await ctx.addInitScript((asHost: boolean) => {
     const w = window as unknown as Record<string, unknown>;
-    w.__confirms = 0; w.__opened = [];
+    w.__confirms = 0; w.__opened = []; w.__sent = [];
     window.confirm = () => { (w.__confirms as number)++; return true; };
-    if (asHost) w.ludifyHost = { openLink: (url: string) => { (w.__opened as string[]).push(url); } };
+    if (asHost) w.ludifyHost = {
+      openLink: (url: string) => { (w.__opened as string[]).push(url); },
+      sendMessage: async (text: string) => { (w.__sent as string[]).push(text); return {}; },
+      composer: true,
+    };
   }, scheme === 'dark');
   // A deck must never make the page fetch anything but the page itself and its fonts.
   ctx.on('request', r => { const u = new URL(r.url()); if (u.protocol !== 'file:' && !/^fonts\.(googleapis|gstatic)\.com$/.test(u.hostname)) errs.push(`${scheme}: request to ${r.url()}`); });
@@ -92,6 +100,32 @@ async function run(scheme: 'light' | 'dark') {
   const total = deck.worlds.reduce((a, w) => a + w.cards.length, 0);
   const worlds = await p.$$eval('.worlds [data-world]', x => x.length);
   if (worlds !== deck.worlds.length) errs.push(`${scheme}: ${worlds} world tiles for ${deck.worlds.length} worlds`);
+  // The summary card: inside a host, Send to chat posts the deck's intro line and, per decision it
+  // names, "- <short>: <option>" (autoplay always picks the first option; a card that is not a
+  // decision counts as skipped); outside one there is no
+  // button, only the picks as text.
+  const all = deck.worlds.flatMap(x => x.cards as Card[]);
+  const summaryCards = all.filter(c => c.type === 'summary').length;
+  let summaries = 0;
+  async function sendPicks(c: Summary) {
+    const button = await p.$('main [data-act="send"]');
+    if (scheme === 'light') { if (button) errs.push('light: a Send to chat button shows outside a host'); return; }
+    if (!button) { errs.push('dark: no Send to chat button on the summary card inside a host'); return; }
+    const lines = (Array.isArray(c.from) ? c.from : []).flatMap((ref: unknown) => {
+      const at = Array.isArray(ref) ? deck.worlds.findIndex(x => (x as { id?: unknown }).id === ref[0]) : -1;
+      const d = at >= 0 ? (deck.worlds[at].cards as Card[])[(ref as unknown[])[1] as number] : undefined;
+      return d ? [`- ${d.short ?? d.h}: ${d.type === 'decide' ? d.opts?.[0] : ui.skipped}`] : [];
+    });
+    const want = [ui.picksIntro, ...lines].join('\n');
+    await button.click();
+    await p.waitForFunction(() => document.getElementById('sent')?.textContent, null, { timeout: 2000 }).catch(() => {});
+    const sent = await p.evaluate(() => (window as unknown as { __sent: string[] }).__sent);
+    const note = await p.textContent('#sent');
+    if (sent.length !== 1 || sent[0] !== want) errs.push(`dark: Send to chat posted ${JSON.stringify(sent)}, expected ${JSON.stringify(want)}`);
+    if (note !== ui.sendEnter) errs.push(`dark: the note under Send to chat reads "${note}", not "${ui.sendEnter}"`);
+    if (shots) await p.screenshot({ path: `${shots}/summary-sent-${scheme}.png` });
+    console.log(`dark: Send to chat posted ${JSON.stringify(sent[0])}; note "${note}"`);
+  }
   let cards = 0, recaps = 0;
   for (let w = 0; w < worlds; w++) {
     await p.click(`.worlds [data-world="${w}"]`);
@@ -108,6 +142,7 @@ async function run(scheme: 'light' | 'dark') {
       await check(`world ${w + 1}, card ${i + 1}`);
       if (i === 0) await leaks(`world ${w + 1}`);
       if (shots && i === 1) await p.screenshot({ path: `${shots}/w${w}-card-${scheme}.png` });
+      if (await p.$('main .picks')) { await sendPicks(deck.worlds[w].cards[i] as Summary); summaries++; }
       cards++;
       if (await p.$eval('#next', (el: HTMLButtonElement) => el.disabled)) { errs.push(`${scheme}: stuck on world ${w + 1}, card ${i + 1}`); break; }
       await p.click('#next');
@@ -125,6 +160,7 @@ async function run(scheme: 'light' | 'dark') {
   const left = (await p.textContent('#left')) ?? '';
   if (cards !== total) errs.push(`${scheme}: played ${cards} of ${total} cards`);
   if (recaps !== worlds) errs.push(`${scheme}: reached ${recaps} of ${worlds} world recaps`);
+  if (summaries !== summaryCards) errs.push(`${scheme}: reached ${summaries} of ${summaryCards} summary cards`);
   if (left !== ui.allDoneShort) errs.push(`${scheme}: top bar says "${left}" after every card`);
   console.log(`${scheme}: lang ${lang}, ${worlds} worlds, ${cards}/${total} cards played, ${recaps}/${worlds} recaps reached; ${left}; ${await p.textContent('#xp')}`);
   const ticks = await p.$$eval('.worlds .tick', x => x.length);

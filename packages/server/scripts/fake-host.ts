@@ -6,17 +6,20 @@ import { AppBridge, PostMessageTransport } from '@modelcontextprotocol/ext-apps/
 declare global {
   interface Window {
     opened: string[];
+    messages: unknown[];
     startHost(html: string, result: Record<string, unknown>, width: number): Promise<void>;
   }
 }
 
 window.opened = [];
+window.messages = [];
 window.startHost = async (html, result, width) => {
   const frame = document.createElement('iframe');
   frame.style.cssText = `width:${width}px;height:760px;border:0`;
   document.body.appendChild(frame);
-  const bridge = new AppBridge(null, { name: 'fake-host', version: '0' }, { openLinks: {} });
+  const bridge = new AppBridge(null, { name: 'fake-host', version: '0' }, { openLinks: {}, message: { text: {} } });
   bridge.onopenlink = async ({ url }) => { window.opened.push(url); return {}; };
+  bridge.onmessage = async params => { window.messages.push(params); return {}; };
   bridge.oninitialized = () => { void bridge.sendToolResult(result as never); };
   await bridge.connect(new PostMessageTransport(frame.contentWindow!, frame.contentWindow!));
   frame.srcdoc = html;

@@ -32,7 +32,8 @@ Each of these maps to a row of `evidence.md`; keep them on.
   wrong try (+8 on multi), +25 for a close guess (+10 otherwise), +15 per decision. The rule is
   `reward()` in [src/xp.ts](src/xp.ts).
 - A world ends on its recap: its key points in three lines or fewer, then on to the next world.
-  The map shows a plain ✓ on each finished world. The deck ends on the `summary` card; there are
+  The map shows a plain ✓ on each finished world. The deck ends on the `summary` card, whose
+  Send to chat button posts the picks as the user's message (inside a host only); there are
   no collectibles, no end-of-deck reward screen and no celebration effects (`evidence.md` rows 13,
   15 and 19).
 
