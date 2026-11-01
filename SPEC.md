@@ -179,8 +179,18 @@ Changes for Ludify:
   to chat. Right before it comes one limits card ("What this can't tell you": gaps in the evidence,
   what's unverified, what depends on the user's situation). Thorough decks also get a myths world.
   The validator requires the decision world and the limits card.
+  **Decided** 2026-11-01 ([#66](https://github.com/calindumitru/ludify/issues/66)): **when the user
+  isn't deciding anything**, only learning, the deck ends on a "Check yourself" world instead: recall
+  cards (`quiz`, `order`, `guess`) after the limits card, then a `summary` card listing 3–6
+  model-written "dig deeper" threads (plain text, validated like the rest). The user ticks the ones
+  they want and Send to chat posts them; the model replies by going deeper or offering a follow-up
+  deck. Recall answers are never totalled into a score. The form doesn't change: the model judges
+  from the "what you're deciding" answer whether the user is only learning. The validator requires
+  one of the two endings, plus the limits card. On thorough depth, that brief has no "Decisions for
+  you" section (§7).
 - **Free tier:** quality varies with the user's plan and model. The landing page says so; the deck
-  and the form don't.
+  and the form don't, except the thorough option's note that it may hit usage limits on free plans
+  ([#65](https://github.com/calindumitru/ludify/issues/65), §7).
 - **Example deck:** the landing page's playable example is the ADHD deck in `examples/`, rewritten
   to this structure and framed as a decision ("How should I set up my reading and learning?"), so
   ADHD sits inside the content, not in the page's headline.
