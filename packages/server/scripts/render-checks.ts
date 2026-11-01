@@ -1,4 +1,4 @@
-// What a host sees from ludify_render, checked over MCP. Both the unit tests (the Worker's fetch
+// What a host sees from ludify_guide and ludify_render, checked over MCP. Both the unit tests (the Worker's fetch
 // handler in Node) and the smoke test (the Worker in `wrangler dev`) run these.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -34,6 +34,20 @@ export async function checkTool(client: Client) {
   const uri = (tool._meta as { ui?: { resourceUri?: string } })?.ui?.resourceUri;
   assert.match(uri ?? '', /^ui:\/\//, 'ludify_render names its UI resource');
   return uri!;
+}
+
+// ludify_guide: a read-only tool with no arguments that returns the whole manual as text.
+export async function checkGuide(client: Client) {
+  const { tools } = await client.listTools();
+  const tool = tools.find(t => t.name === 'ludify_guide');
+  assert.ok(tool, 'ludify_guide is listed');
+  assert.equal(tool.annotations?.readOnlyHint, true, 'ludify_guide is read-only');
+  assert.match(tool.description ?? '', /ludify_plan/, 'ludify_guide says when to skip ludify_plan');
+  const result = await client.callTool({ name: 'ludify_guide', arguments: {} });
+  assert.notEqual(result.isError, true, textOf(result.content));
+  const text = textOf(result.content);
+  assert.equal(text, await readFile(new URL('../guide.md', import.meta.url), 'utf8'), 'the manual is guide.md as it is');
+  return text;
 }
 
 export async function checkValid(client: Client, uri: string) {

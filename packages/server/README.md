@@ -7,10 +7,16 @@ as is.
 
 ## Tools
 
+- `ludify_guide()`: returns [guide.md](guide.md), the deck-writing manual, as text: the card types,
+  the writing and source rules, depth and structure, `ui` and the engine's English strings, decks
+  from existing research (skip `ludify_plan`), answering a picks message, a whole quick deck, and
+  the deck JSON Schema. The model calls it right before writing a deck. `scripts/build-guide.ts`
+  writes it into `src/guide.gen.ts` (not committed), and `src/guide.test.ts` fails when the schema,
+  the English strings or the example deck in it drift from `@ludify/deck`.
 - `ludify_render(deck)`: checks the deck with `validateDeck` from `@ludify/deck`. A valid deck
   comes back with `_meta.deck`, and the host opens the deck player (`ui://ludify/deck-player-v1.html`),
   which plays it inline. An invalid deck comes back as a tool error listing every problem, one per
-  line, and pointing to `ludify_guide` (a later slice adds it). A deck without `ui.key` gets one made
+  line, and pointing to `ludify_guide`. A deck without `ui.key` gets one made
   from its content, so two decks on one host origin don't share saved progress.
 
 ## The deck player
@@ -28,7 +34,7 @@ From the repo root:
 
 - `npm run dev -w @ludify/server`: builds the player and runs `wrangler dev` on
   `http://localhost:8791/mcp`.
-- `npm run smoke`: `scripts/smoke.ts` (the Worker in `wrangler dev`, called over MCP with
-  `packages/deck/fixtures/quick-deck.json` and a broken copy) and `scripts/player-check.ts` (the
+- `npm run smoke`: `scripts/smoke.ts` (the Worker in `wrangler dev`, called over MCP: `ludify_guide`,
+  then `ludify_render` with `packages/deck/fixtures/quick-deck.json` and a broken copy) and `scripts/player-check.ts` (the
   result played in a stand-in host at 375 px; screenshots in `packages/server/dist/shots/player/`).
 - `npm test`, `npm run typecheck`: unit tests call the Worker's fetch handler in-process.

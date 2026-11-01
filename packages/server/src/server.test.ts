@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import worker from './index.ts';
-import { checkInvalid, checkTool, checkValid, connect, loadDeck } from '../scripts/render-checks.ts';
+import { checkGuide, checkInvalid, checkTool, checkValid, connect, loadDeck } from '../scripts/render-checks.ts';
 import { render } from './server.ts';
 
 // The Worker's own fetch handler, called in-process: the same requests `wrangler dev` would get.
 const client = () => connect('http://ludify.test/mcp', (url, init) => worker.fetch(new Request(url, init)));
+
+describe('ludify_guide over MCP', () => {
+  it('returns the manual, guide.md, as text', async () => {
+    expect(await checkGuide(await client())).toMatch(/^# How to write a Ludify deck\n/);
+  });
+});
 
 describe('ludify_render over MCP', () => {
   it('lists a read-only tool that opens the deck player', async () => {

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-player.ts",
+    "build": "node scripts/build-player.ts && node scripts/build-guide.ts",
     "typecheck": "npm run build && tsc --noEmit",
     "test": "npm run build && vitest run",
     "dev": "npm run build && wrangler dev --port 8791",

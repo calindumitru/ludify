@@ -86,6 +86,10 @@ A model-written deck is checked before it plays: `validateDeck(json)` in `src/va
 express. Where this page and the schema differ, the schema wins: the example deck still uses the
 old format until its rewrite (SPEC milestone 4).
 
+The model doesn't read this page: `ludify_guide` gives it
+[packages/server/guide.md](../server/guide.md), which embeds this schema and the English `ui`
+strings and is tested against both, so a schema change means pasting the new schema into it.
+
 What the schema adds to the tables above:
 
 - `lang` (a BCP 47 tag) is required. `ui` is optional, holds only the engine's string keys, and its
