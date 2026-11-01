@@ -128,11 +128,14 @@ points at the code the owner saw and the build is checked against it.
     Romanian fixture, a hostile fixture and a partial deck) and plays every card, light and
     dark, failing on unsafe markup or a page wider than the phone; its
     screenshots land in `packages/deck/dist/shots/<deck>/`. Smoke starts the
-    MCP server in `wrangler dev` on port 8791, calls `ludify_guide` and `ludify_render` over MCP
+    MCP server in `wrangler dev` on port 8791, calls `ludify_plan` (with extras, then with bad
+    ones), `ludify_guide` and `ludify_render` over MCP
     with `packages/deck/fixtures/quick-deck.json`, a broken copy of it on attempts 1 and 2, and
     `partial-deck.json` on attempt 2,
     then plays the result in the deck player inside a stand-in host at
-    375 px, up to Send to chat on the summary card; its screenshots land in `packages/server/dist/shots/player/`.
+    375 px, up to Send to chat on the summary card, and fills the narrowing form there by
+    keyboard alone; its screenshots land in `packages/server/dist/shots/player/` and
+    `packages/server/dist/shots/form/`.
 - **Run the app locally:** `npm run build:example -w @ludify/deck`, then open
   `packages/deck/dist/adhd-learning-deck.html` in a browser (a file, no
   server). Build any deck with
