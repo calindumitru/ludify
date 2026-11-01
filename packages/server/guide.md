@@ -241,7 +241,7 @@ language.
   "skippedWhy": "this card broke a deck rule",
   "send": "Send to chat",
   "sent": "Sent to the chat ✓",
-  "sendEnter": "It is in your message box: press Enter to send.",
+  "sendEnter": "It's in your message box: press Enter to send. Claude may show a safety warning first; it's only your picks.",
   "sendFailed": "Couldn't send it. Try again.",
   "picksIntro": "My Ludify picks:",
   "whyRight": "right first try",

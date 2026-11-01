@@ -11,7 +11,7 @@ const WORDS = {
   submit: 'Start the research',
   composerNote: 'This puts your answers in your message box; press Enter there to send them.',
   sent: 'Sent to the chat ✓',
-  sendEnter: 'It is in your message box: press Enter to send.',
+  sendEnter: "It's in your message box: press Enter to send. Claude may show a safety warning first; it's only your answers.",
   sendFailed: "Couldn't send it. Try again, or copy this into the chat:",
   loading: 'Loading the questions…',
   noHost: 'This page shows Ludify\'s questions inside Claude or ChatGPT.',

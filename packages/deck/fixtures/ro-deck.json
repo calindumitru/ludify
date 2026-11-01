@@ -78,7 +78,7 @@
     "skippedWhy": "acest cartonaș a încălcat o regulă a pachetului",
     "send": "Trimite în chat",
     "sent": "Trimis în chat ✓",
-    "sendEnter": "E în caseta de mesaj: apasă Enter ca să-l trimiți.",
+    "sendEnter": "E în caseta de mesaj: apasă Enter ca să-l trimiți. Claude poate afișa întâi un avertisment de siguranță; sunt doar alegerile tale.",
     "sendFailed": "Nu s-a putut trimite. Încearcă din nou.",
     "picksIntro": "Alegerile mele Ludify:",
     "whyRight": "corect din prima",
