@@ -163,6 +163,14 @@ Changes for Ludify:
   what you're deciding, how deep, what you already know. The model may add up to three
   topic-specific ones (e.g. country, house size) as JSON, validated like a deck (types, at most
   three, plain text).
+- **Language:** **Decided** 2026-11-01 ([#53](https://github.com/calindumitru/ludify/issues/53)).
+  `ludify_plan` takes an optional `lang` and `ui`, like a deck (§4): the model writes the form's
+  own words in the user's language, any language, and Ludify stores no translations. `ui` covers
+  every string shown once a plan has arrived (the fixed questions, depth labels, button, the note
+  under it, the status lines) and the message the form posts (its intro line, question labels and
+  depth word); the tool's text names the exact intro to wait for. The few lines shown before a plan
+  arrives stay English. A bad `ui` string is dropped and English fills that gap; the tool's text
+  names it, and it never blocks the form.
 - **Depth:** quick is 2 worlds and about 12 cards with a lighter search; thorough is 4 worlds and
   about 25–30 cards with a wider search and more primary sources.
 - **Sources:** prefer primary and peer-reviewed; every number on a card links to where it came from;
@@ -217,8 +225,63 @@ Full table with sources: [docs/evidence.md](docs/evidence.md). In short:
   today. The deck gets you interested; deciding properly also takes the brief. Open for the prototype: where
   the brief lives (a host document, a Ludify page, inside the deck), and how its explorers
   (scores, calculators) stay data, never code. v1 builds the deck only.
+
+  **Decided** 2026-11-01 ([#62](https://github.com/calindumitru/ludify/issues/62)), on the
+  [brief map](https://github.com/calindumitru/ludify/issues/59): **the brief as data.** A brief is
+  JSON the engine draws, shaped like the audience brief:
+  - **Skeleton:** a hero (kicker, title, lead, key-fact tiles, a disclaimer), then colour-coded
+    parts (each with a door on the hero and an intro), then sections (title, short name for the
+    contents index, lede), each a list of blocks. `lang`, a translatable `ui` and the deck's
+    Markdown-lite carry over; part colours come from a fixed palette.
+  - **Blocks:** paragraph, lede, sub-heading, list, table (number columns, total rows, a note),
+    callout (tip, warning, key point, stop), fact cards, steps, a checklist with saved ticks, tabs,
+    expandable panels and terms. Tabs hold any block except more tabs.
+  - **Pills:** each brief declares up to 5 statuses, each with its own label and one of 5 fixed
+    tones (good, caution, bad, unknown, your call), and uses them inline in text.
+  - **Compare explorer:** 2–6 options by 2–6 dimensions; the reader picks an option and sees 0–5
+    scores, each labelled as a judgment with its confidence, then a verdict, why, and pill-tagged
+    points.
+  - **Calculators:** slider inputs (min, max, step, format, presets) and outputs written as
+    formulas in a closed arithmetic language (+ − × ÷, brackets, min, max, round, input names) that
+    Ludify's own parser evaluates, never `eval`. The validator rejects unknown names and cycles.
+  - **Sources:** every section, compare option and calculator output carries a source, tagged by
+    type as in decks; inline links on figures are encouraged but not checked.
+  - **Limits:** a limits section is required, as well as the hero disclaimer.
+
+  **Decided** 2026-11-01 ([#61](https://github.com/calindumitru/ludify/issues/61)): **where the
+  brief lives and how you come back.**
+  - **Home:** open until the Owner tries the [prototype](https://github.com/calindumitru/ludify/issues/64),
+    which shows three homes for the same brief: an inline door (title, key facts, contents, Open)
+    with the brief read fullscreen; a Brief tab inside the deck's player; and the whole brief
+    inline, scrolling. A model-written Claude artifact is not a candidate (it makes the brief code).
+  - **Coming back** means coming back to its chat, like a deck: Ludify stores nothing, and a new chat
+    doesn't have the brief. Nothing carries it across chats.
+  - **Telling the user:** the model says so once, after drawing the brief, and suggests pinning or
+    renaming the chat or moving it into a Project; `ludify_guide` tells it to. The brief itself
+    carries no such line.
+
+  **Decided** 2026-11-01 ([#63](https://github.com/calindumitru/ludify/issues/63)): **where the
+  decisions happen when you get both.**
+  - **Picks happen in the deck only.** Its decision world holds the picks and the one Send to chat;
+    the brief keeps no picks and has no Send to chat.
+  - **The brief's decisions follow the form.** When the user named what they're deciding, the brief
+    ends with a neutral "Decisions for you" section: each decision, its options and what changes
+    them, tagged with the "your call" pill, never the lean, then a pointer to the deck. When they
+    named no goal, the brief has no such section.
+  - **Neutral means no pick for you.** The compare explorer keeps its verdicts, labelled as
+    judgments with their confidence; only the deck's `decide` cards say where the research leans.
+  - **How the brief and the deck point at each other** (deck to brief, brief to deck, and whether
+    Send to chat mentions the brief) is decided with the
+    [prototype](https://github.com/calindumitru/ludify/issues/64).
+
+  **Decided** 2026-11-01 ([#65](https://github.com/calindumitru/ludify/issues/65)): **thorough on
+  every plan.** Thorough depth (a brief and a deck) is offered on free plans too, never gated.
+  Ludify can't see the user's plan, so it never guesses: the thorough option in the narrowing form
+  carries a short note shown to everyone, that it's a longer, heavier run that may hit usage limits
+  on free plans.
 - Kept in view, not specified: a narrated story version ("tell me a story") as an alternative to
-  read-aloud; progress that follows the user across chats in Claude (a fixed `ui.domain`).
+  read-aloud; progress that follows the user across chats in Claude (a fixed `ui.domain`); saving a
+  brief outside the chat (a Claude artifact the user keeps, Notion or another notes app).
 
 ## 8. Open questions
 

@@ -33,13 +33,24 @@ _Avoid_: Level, chapter
 One screen of a deck holding a single idea or play (an explanation, a quiz, a guess, a decision).
 _Avoid_: Slide, page
 
+**Part**:
+One of a brief's few colour-coded groups of sections, each with a door on the brief's opening
+screen. The brief's counterpart of a deck's world.
+_Avoid_: World (that's a deck's), chapter
+
+**Section**:
+One titled stretch of a brief inside a part, listed in its contents index; it can hold a whole
+assessment, where a card holds one idea.
+_Avoid_: Card (that's a deck's), page, chapter
+
 **Narrowing form**:
 The short form shown before research that fixes the research's scope: what the user is deciding, how
 deep to go, what they already know, and up to three topic-specific questions.
 _Avoid_: Questionnaire, intake
 
 **Depth**:
-How big a deck is: quick (two worlds) or thorough (four worlds, wider research).
+How big the output is: quick (a two-world deck) or thorough (a four-world deck from wider research
+and, after v1, a brief made from the same research).
 _Avoid_: Length, level
 
 **Guide**:
