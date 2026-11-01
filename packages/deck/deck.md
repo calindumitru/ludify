@@ -119,7 +119,7 @@ no valid card left. When a `decide` card is dropped, `summary.from` is re-pointe
 remain.
 
 `partialDeck(result)` is what `ludify_render` plays when a retry is still invalid: `deck` plus
-`skipped`, one entry per card left out (`world`, `card`, `type`, `h`, and `why`, its errors without
-the place). `skipped` isn't a deck field, so a model-written deck can't carry one. The engine shows
-it as a note at the top of the map: `ui.skippedNote` in the deck's language, then each card's
-heading and why. The reasons are the validator's English sentences.
+`skipped`, one entry per card left out (`world`, `card`, `type`, `h`). `skipped` isn't a deck
+field, so a model-written deck can't carry one. The engine shows it as a note at the top of the
+map, all in the deck's language: `ui.skippedNote`, then each card's heading followed by
+`ui.skippedWhy`. The exact errors go only to the model.

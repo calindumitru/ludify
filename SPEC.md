@@ -93,6 +93,8 @@ search; Ludify supplies the method and the deck.
     If it's invalid, it returns an exact error list (card 7: missing `src`) as a tool error,
     pointing back to `ludify_guide`, and the model fixes the deck and calls again. If the second try
     is still invalid, the valid cards play under a visible note naming the skipped cards and why.
+    **Decided** 2026-11-01 (#22): the note gives each skipped card one translated reason
+    (`ui.skippedWhy`), never the validator's English; the model still gets the exact errors.
 - **Decks from existing research** are a v1 entry point: research done with the AI in the chat, a
   markdown file attached to the chat, or pasted findings. The model skips `ludify_plan` and goes
   `ludify_guide` → `ludify_render`; Ludify never reads files itself. Facts without a source get one

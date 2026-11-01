@@ -349,13 +349,13 @@ describe('the ui block', () => {
 });
 
 describe('partialDeck: the deck a failed retry plays', () => {
-  it('is the valid cards plus a `skipped` list naming each card left out and why', () => {
+  it('is the valid cards plus a `skipped` list naming each card left out, without the English errors', () => {
     const result = validateDeck(broken(quick, d => { delete d.worlds[0].cards[0].src; d.worlds[0].cards[1].right = 9; }));
     expect(partialDeck(result)).toEqual({
       ...result.deck,
       skipped: [
-        { world: 1, card: 1, type: 'info', h: quick.worlds[0].cards[0].h, why: [`\`src\` is missing; add ${SRC}.`] },
-        { world: 1, card: 2, type: 'quiz', h: quick.worlds[0].cards[1].h, why: ['`right` is 9, but the card has 3 options; use an index from 0 to 2.'] },
+        { world: 1, card: 1, type: 'info', h: quick.worlds[0].cards[0].h },
+        { world: 1, card: 2, type: 'quiz', h: quick.worlds[0].cards[1].h },
       ],
     });
   });

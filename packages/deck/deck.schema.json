@@ -147,6 +147,7 @@
         "source": { "$ref": "#/$defs/plain" },
         "skipped": { "$ref": "#/$defs/plain" },
         "skippedNote": { "$ref": "#/$defs/plain" },
+        "skippedWhy": { "$ref": "#/$defs/plain" },
         "tags": {
           "description": "the default tag for each card type, as plain text without HTML tags",
           "type": "object",

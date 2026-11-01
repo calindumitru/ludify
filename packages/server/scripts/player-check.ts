@@ -99,9 +99,15 @@ const ok = await render(deck);
   if (top !== 'left-out') errs.push(`partial: the first thing on the map is "${top}", not the note`);
   const lead = (await frame.locator('main .left-out p').innerText()).trim();
   if (lead !== input.ui.skippedNote) errs.push(`partial: the note reads "${lead}", not the deck's "${input.ui.skippedNote}"`);
+  // Each card left out: its heading, then the deck's own reason; the validator's English stays with the model.
+  const items = (await frame.locator('main .left-out li').allInnerTexts()).map(t => t.trim());
+  for (const [i, t] of items.entries()) {
+    const want = `${input.worlds[0].cards[i].h}: ${input.ui.skippedWhy}`;
+    if (t !== want) errs.push(`partial: note line ${i + 1} reads "${t}", not "${want}"`);
+  }
   const width = await sideways(frame, 'partial home');
   await page.screenshot({ path: `${shots}/partial.png` });
-  console.log(`partial: note at the top names ${noted} cards left out, in the deck's language ("${lead}"); width ${width}`);
+  console.log(`partial: note at the top names ${noted} cards left out, in the deck's language ("${lead}" / ${items.map(t => `"${t}"`).join(' / ')}); width ${width}`);
   await page.close();
 }
 

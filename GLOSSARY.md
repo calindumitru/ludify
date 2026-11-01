@@ -63,7 +63,7 @@ _Avoid_: Widget, viewer
 
 **Partial deck**:
 What `ludify_render` plays when the model's second try at a deck still has broken cards: the valid
-cards, under a note at the top naming each card left out and why.
+cards, under a note at the top naming each card left out, with one reason in the deck's language.
 _Avoid_: Broken deck, fallback deck
 
 **Source tag**:

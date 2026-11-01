@@ -77,13 +77,14 @@ import { reward } from './xp.ts';
     const m = /^([\s\S]*?)\{([\s\S]+?)\}([\s\S]*)$/.exec(String(t ?? ''));
     return m ? `${md(m[1])}<em>${md(m[2])}</em>${md(m[3])}` : md(t);
   }
-  // A partial deck (ludify_render after a failed retry) names each card it left out, and why.
+  // A partial deck (ludify_render after a failed retry) names each card it left out, with one
+  // reason in the deck's language; the exact errors went to the model.
   function leftOut() {
     const cards = list(Q.skipped).filter(isMap);
     if (!cards.length) return '';
     const name = s => (typeof s.h === 'string' && s.h ? md(s.h) : esc(label(U.tags, s.type) || `${num(s.world)}.${num(s.card)}`));
     return `<div class="left-out" role="note"><p>${T('skippedNote')}</p><ul>${cards.map(s =>
-      `<li><strong>${name(s)}</strong>: ${list(s.why).map(md).join(' ')}</li>`).join('')}</ul></div>`;
+      `<li><strong>${name(s)}</strong>: ${T('skippedWhy')}</li>`).join('')}</ul></div>`;
   }
   function home() {
     S.view = 'home'; document.getElementById('nav').hidden = true;

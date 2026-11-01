@@ -19,8 +19,9 @@ as is.
   every problem, one per line, pointing to `ludify_guide` and asking for `attempt: 2`. The server
   keeps nothing between calls, so the model counts the attempts. From attempt 2 on, a deck with
   broken cards plays as a partial deck (`partialDeck` from `@ludify/deck`): the valid cards, with
-  `skipped` naming each card left out and why, which the engine shows as a note at the top of the
-  map. A deck-level problem still comes back as a tool error, asking for the next attempt. A deck
+  `skipped` naming each card left out, which the engine shows as a note at the top of the map,
+  each card with one reason in the deck's language (`ui.skippedWhy`); the exact errors go only to
+  the model. A deck-level problem still comes back as a tool error, asking for the next attempt. A deck
   without `ui.key` gets one made from its content, so two decks on one host origin don't share
   saved progress.
 

@@ -13,8 +13,9 @@ export type DeckResult = { ok: boolean; errors: string[]; deck: Deck | null; ski
 export type Card = { type: string; h: string; kind?: string; from?: [string, number][]; [field: string]: unknown };
 export type World = { id: string; cards: Card[]; [field: string]: unknown };
 export type Deck = { lang: string; ui?: Record<string, unknown>; worlds: World[] };
-// A card a partial deck leaves out: where it was, what it was, and why, without the place prefix.
-export type LeftOut = { world: number; card: number; type?: string; h?: string; why: string[] };
+// A card a partial deck leaves out: where it was and what it was. Why goes to the model, not the
+// note: the note says only `ui.skippedWhy`, in the deck's language.
+export type LeftOut = { world: number; card: number; type?: string; h?: string };
 
 type Node = { description?: string; $ref?: string; properties?: Record<string, Node>; [k: string]: unknown };
 const defs = schema.$defs as unknown as Record<string, Node>;
@@ -315,14 +316,11 @@ function check(json: unknown): DeckResult {
 }
 
 // The deck to play after a failed retry: the valid cards, plus `skipped` for the engine's note
-// naming each card left out and why. Null when nothing can be played; the deck as it is when no
-// card was dropped. `skipped` isn't a deck field, so a model can't send one.
+// naming each card left out. Null when nothing can be played; the deck as it is when no card was
+// dropped. `skipped` isn't a deck field, so a model can't send one.
 export function partialDeck(result: DeckResult): (Deck & { skipped?: LeftOut[] }) | null {
   if (!result.deck) return null;
   if (result.skipped.length === 0) return result.deck;
-  const skipped = result.skipped.map(({ errors, ...card }) => {
-    const prefix = `world ${card.world}, card ${card.card}: `;
-    return { ...card, why: errors.map(e => (e.startsWith(prefix) ? e.slice(prefix.length) : e)) };
-  });
+  const skipped: LeftOut[] = result.skipped.map(({ errors: _, ...card }) => card);
   return { ...result.deck, skipped };
 }
