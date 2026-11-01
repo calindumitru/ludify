@@ -9,7 +9,7 @@ import { GUIDE } from './guide.gen.ts';
 import { PLAYER_HTML } from './player.gen.ts';
 
 // Hosts cache a UI resource by its URI, so a player change that old pages can't take bumps it.
-export const PLAYER_URI = 'ui://ludify/deck-player-v1.html';
+export const PLAYER_URI = 'ui://ludify/deck-player-v2.html';
 
 // The engine's stylesheet loads its fonts from Google Fonts; the host's sandbox allows only these.
 const FONT_ORIGINS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
