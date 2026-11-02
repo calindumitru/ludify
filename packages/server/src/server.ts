@@ -9,6 +9,8 @@ import { FORM_HTML } from './form.gen.ts';
 import { GUIDE } from './guide.gen.ts';
 import { planText, validatePlan } from './plan.ts';
 import { PLAYER_HTML } from './player.gen.ts';
+import { BRIEF_FORMAT } from '../prototype-one-call-test/brief-format.ts'; // PROTOTYPE: one-call test
+import { oneCallReport } from '../prototype-one-call-test/check.ts'; // PROTOTYPE
 
 // Hosts cache a UI resource by its URI, so a player change that old pages can't take bumps it.
 export const PLAYER_URI = 'ui://ludify/deck-player-v3.html';
@@ -128,6 +130,26 @@ export function createServer(): McpServer {
     annotations: { title: 'Play a Ludify deck', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     _meta: { ui: { resourceUri: PLAYER_URI } },
   }, async ({ deck, attempt }) => render(deck, attempt));
+
+  // PROTOTYPE, removed after the test (ludify#72): can the model write a deck and its brief in one call?
+  server.registerTool('ludify_one_call_guide', {
+    title: 'PROTOTYPE: guide for the one-call test',
+    description: 'PROTOTYPE for testing only. Use it only when the user asks for the Ludify one-call test. '
+      + 'After researching the topic thoroughly, call this instead of ludify_guide: it returns the deck manual, the brief format, '
+      + 'and a `started` number to pass to ludify_one_call_test.',
+    annotations: { title: 'PROTOTYPE: guide for the one-call test', readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  }, async () => ({ content: [{ type: 'text', text: `${GUIDE}\n${BRIEF_FORMAT}\nstarted: ${Date.now()}\n` }] }));
+  server.registerTool('ludify_one_call_test', {
+    title: 'PROTOTYPE: the one-call test',
+    description: 'PROTOTYPE for testing only. Takes a thorough Ludify deck and its brief in one call, checks both, and returns their sizes '
+      + 'and the time since ludify_one_call_guide. Call ludify_one_call_guide first and write both to its format. Call it once; never retry.',
+    inputSchema: z.object({
+      deck: z.unknown().describe('The thorough deck: a JSON object with `lang`, `ui` and `worlds`.'),
+      brief: z.unknown().describe('The brief: a JSON object with `lang`, `ui`, `pills`, `hero` and `parts`.'),
+      started: z.number().optional().describe('The `started` number at the end of ludify_one_call_guide.'),
+    }),
+    annotations: { title: 'PROTOTYPE: the one-call test', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, async ({ deck, brief, started }) => ({ content: [{ type: 'text', text: oneCallReport(deck, brief, started) }] }));
 
   return server;
 }
