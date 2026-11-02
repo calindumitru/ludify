@@ -9,10 +9,12 @@ import { FORM_HTML } from './form.gen.ts';
 import { GUIDE } from './guide.gen.ts';
 import { planText, validatePlan } from './plan.ts';
 import { PLAYER_HTML } from './player.gen.ts';
+import { SPIKE_DATA, SPIKE_HTML } from './spike.gen.ts'; // PROTOTYPE: brief spike
 
 // Hosts cache a UI resource by its URI, so a player change that old pages can't take bumps it.
 export const PLAYER_URI = 'ui://ludify/deck-player-v3.html';
 export const FORM_URI = 'ui://ludify/plan-form-v1.html';
+const SPIKE_URI = 'ui://ludify/brief-spike-v3.html'; // PROTOTYPE
 
 // The engine's stylesheet loads its fonts from Google Fonts; the host's sandbox allows only these.
 const FONT_ORIGINS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
@@ -128,6 +130,25 @@ export function createServer(): McpServer {
     annotations: { title: 'Play a Ludify deck', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     _meta: { ui: { resourceUri: PLAYER_URI } },
   }, async ({ deck, attempt }) => render(deck, attempt));
+
+  // PROTOTYPE, never merge (ludify#64): the brief and its deck, fixed data, two views.
+  registerAppResource(server, 'Ludify brief spike', SPIKE_URI, { description: 'PROTOTYPE: a brief and its deck.' }, async () => ({
+    contents: [{ uri: SPIKE_URI, mimeType: RESOURCE_MIME_TYPE, text: SPIKE_HTML, _meta: { ui: { csp: { resourceDomains: FONT_ORIGINS } } } }],
+  }));
+  registerAppTool(server, 'ludify_brief_spike', {
+    title: 'PROTOTYPE: show the brief spike',
+    description: 'PROTOTYPE for testing only. When the user asks for the brief spike, call this tool twice in a row: first with view "brief", then with view "deck". '
+      + 'Both show fixed content (who Funvenio is for and how it could pay: the audiences research); write nothing yourself. Between the calls say one short line, e.g. "And the deck from the same research:". '
+      + 'After the second call, say once that the brief and deck live in this chat, and suggest pinning or renaming the chat to come back to them.',
+    inputSchema: z.object({ view: z.enum(['brief', 'deck']).describe('"brief" first, then "deck".') }),
+    annotations: { title: 'PROTOTYPE: show the brief spike', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    _meta: { ui: { resourceUri: SPIKE_URI } },
+  }, async ({ view }) => ({
+    content: [{ type: 'text', text: view === 'brief'
+      ? 'The brief is showing (prototype). Now call ludify_brief_spike with view "deck".'
+      : 'The deck is showing (prototype). Tell the user once that both live in this chat and suggest pinning or renaming it.' }],
+    _meta: { spike: { view, ...SPIKE_DATA } },
+  }));
 
   return server;
 }

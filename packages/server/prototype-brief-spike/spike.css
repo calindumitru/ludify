@@ -1,0 +1,115 @@
+/* PROTOTYPE styles for the brief spike. Parts reuse the deck's world colours. */
+:root{--p1:var(--w4);--p2:var(--w2);--p3:var(--w1);--p4:var(--w3);--pg:#2f7a3d;--pc-bad:#b0302a}
+body.view-brief{min-height:0}
+#brief-root,#brief-layer{max-width:46rem;margin:0 auto;padding:0 max(14px,env(safe-area-inset-right,0px)) 5rem max(14px,env(safe-area-inset-left,0px));overflow-wrap:anywhere}
+#brief-layer.over{position:fixed;inset:0;max-width:none;overflow:auto;background:var(--bg);z-index:20;padding-bottom:6rem}
+#brief-layer.over>*{max-width:46rem;margin-left:auto;margin-right:auto}
+body.full.view-brief{height:100dvh;overflow:auto}
+.spike-note{margin:1rem 0;padding:1rem;border:2px dashed var(--line);border-radius:14px;color:var(--muted);font-size:.95rem}
+/* CALM brief: one place per fact, one way to navigate, boxes only around what you operate. */
+#brief-root,#brief-layer{font-size:1.02rem;line-height:1.6}
+.pill{font:700 .78em/1 var(--f-body);white-space:nowrap}
+.pill::before{content:"";display:inline-block;width:.55em;height:.55em;border-radius:50%;background:currentColor;margin-right:.3em;vertical-align:.05em}
+.t-good{color:var(--ok)}.t-bad{color:var(--bad)}.t-caution{color:var(--w2)}.t-unknown{color:var(--muted)}.t-you{color:var(--w1)}
+.b-kicker{font-size:.85rem;color:var(--muted)}
+.b-hero{padding:1.4rem 0 .4rem}
+.b-hero h1,.b-door h1{font:800 clamp(1.7rem,6vw,2.4rem)/1.08 var(--f-display);margin:.3rem 0 .6rem;text-wrap:balance}
+.b-hero h1 em,.b-door h1 em{font-style:normal;color:inherit;text-decoration:underline;text-decoration-color:var(--w2);text-decoration-thickness:.12em;text-underline-offset:.12em}
+.b-gist{padding-left:1.1rem;margin:.6rem 0}.b-gist li{margin:.35rem 0}
+.b-disc{font-size:.88rem;color:var(--muted)}
+.b-link{border:0;background:none;padding:0;color:var(--ink);font-weight:700;text-decoration:underline;cursor:pointer}
+.b-top{position:sticky;top:0;z-index:6;background:var(--bg);display:flex;gap:.6rem;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--line)}
+.b-ttl{flex:1;font-weight:700;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.b-cdrop{position:relative}
+.b-cdrop>summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:.25rem .7rem;font-weight:700;font-size:.85rem;background:var(--paper)}
+.b-cdrop>summary::-webkit-details-marker{display:none}
+.b-cdrop[open] .b-contents{position:absolute;right:0;top:2.2rem;width:min(22rem,88vw);max-height:70vh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;box-shadow:0 12px 30px -12px rgba(0,0,0,.35)}
+.b-close{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:.25rem .7rem;font-weight:700;font-size:.85rem;cursor:pointer}
+.b-cpart{margin:.3rem 0 .6rem}.b-cpart b{font-size:.8rem;color:var(--pc)}
+.b-cpart ul{list-style:none;margin:.15rem 0 0;padding:0}
+.b-cpart button{border:0;background:none;padding:.18rem 0;cursor:pointer;text-align:left;font-size:.92rem}
+.b-cpart button:hover{text-decoration:underline}
+.b-door{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:1rem 1.1rem 1.1rem;margin:.8rem 0}
+.b-doorc{margin:.6rem 0 1rem;font-size:.92rem}.b-doorc>summary{cursor:pointer;color:var(--muted)}
+.b-open{width:100%}
+.b-part{margin-top:2.4rem;border-top:3px solid var(--pc);padding-top:.6rem}
+.b-part h2{font:800 1.35rem/1.1 var(--f-display);margin:0;color:var(--pc)}
+.b-pintro{color:var(--muted);margin:.2rem 0 0;font-size:.95rem}
+.b-sec{padding:1.4rem 0 .4rem;scroll-margin-top:3rem}
+.b-sec.flash{animation:flash 1.6s ease}
+@keyframes flash{0%,40%{background:var(--w1s)}}
+.b-sec h3{font:750 1.2rem/1.2 var(--f-display);margin:0 0 .2rem}
+.b-lede{color:var(--muted);margin:0 0 .8rem}
+.b-list li,.b-check li{margin:.3rem 0}
+.b-check{list-style:none;padding:0}.b-check label{display:flex;gap:.5rem;align-items:flex-start;cursor:pointer}
+.b-check input{width:1.1rem;height:1.1rem;margin-top:.3rem;accent-color:var(--w1)}
+.b-table{overflow-x:auto;margin:.8rem 0}
+.b-table table{border-collapse:collapse;width:100%;font-size:.9rem}
+.b-table th,.b-table td{border-bottom:1px solid var(--line);padding:.4rem .5rem .4rem 0;text-align:left;vertical-align:top}
+.b-table th{font-weight:700;color:var(--muted);font-size:.82rem}
+.b-note{font-size:.85rem;color:var(--muted)}
+.b-callout{border-left:3px solid var(--line);padding:.05rem 0 .05rem .8rem;margin:.9rem 0}
+.b-callout p{margin:0}.c-tip{border-color:var(--ok)}.c-warn{border-color:var(--w2)}.c-key{border-color:var(--w1)}.c-stop{border-color:var(--bad)}
+.b-facts{padding-left:1.1rem}
+.b-steps{padding-left:1.3rem}.b-steps li{margin:.5rem 0}.b-steps b{display:block}
+.b-tabs{margin:.9rem 0}
+.b-tabrow{display:flex;overflow-x:auto;border-bottom:1px solid var(--line);gap:.2rem}
+.b-tabrow button{border:0;background:none;padding:.45rem .6rem;cursor:pointer;font-weight:700;color:var(--muted);white-space:nowrap}
+.b-tabrow button[aria-selected=true]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.b-tabpane{padding:.2rem 0}
+.b-panel{border-bottom:1px solid var(--line)}
+.b-panel summary{cursor:pointer;padding:.5rem 0;font-weight:700}
+.b-terms dt{font-weight:700;margin-top:.6rem}.b-terms dd{margin:.1rem 0 0}
+.b-src{font-size:.82rem;color:var(--muted);margin:.8rem 0 0}.b-src summary{cursor:pointer}
+.b-src ul{margin:.3rem 0 0;padding-left:1.1rem}
+.b-compare,.b-calc{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8rem 1rem;margin:.9rem 0}
+.b-opts{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .8rem}
+.b-opts button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:.3rem .7rem;cursor:pointer;font-size:.88rem}
+.b-opts button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.b-score{display:grid;grid-template-columns:8rem 1fr 1.6rem;gap:0 .6rem;align-items:center;margin:.3rem 0;font-size:.9rem}
+.b-score i{height:8px;border-radius:4px;background:var(--bg);position:relative;overflow:hidden}
+.b-score i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--s);background:var(--ink);opacity:.7;border-radius:4px}
+.b-score em{grid-column:2/4;font-size:.75rem;color:var(--muted);font-style:normal}
+.b-points{list-style:none;padding:0}.b-points li{margin:.35rem 0}
+.b-in{display:grid;grid-template-columns:1fr auto;gap:.1rem .6rem;margin:.7rem 0}
+.b-in output{font-weight:700}
+.b-in input{grid-column:1/3;width:100%;accent-color:var(--ink)}
+.b-in small{grid-column:1/3;color:var(--muted);font-size:.8rem;line-height:1.35}
+.b-presets{grid-column:1/3;display:flex;gap:.3rem;flex-wrap:wrap}
+.b-presets button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:.1rem .55rem;font-size:.8rem;cursor:pointer}
+.b-outs{display:grid;gap:.35rem;margin-top:.8rem;border-top:1px solid var(--line);padding-top:.7rem}
+.b-out{display:grid;grid-template-columns:1fr auto;gap:0 .6rem}
+.b-out strong{font-weight:800}.b-out strong.neg{color:var(--bad)}
+.b-out em{grid-column:1/3;font-size:.8rem;color:var(--muted);font-style:normal}
+.b-pointer{margin:1rem 0;font-weight:700}
+button.b-pointer{width:100%}
+/* deck view: the Brief tab (home B) and per-card doors */
+#spike-tabs{position:sticky;top:0;z-index:7;display:flex;gap:0;background:var(--paper);border-bottom:1px solid var(--line);justify-content:center}
+#spike-tabs button{border:0;background:none;padding:.6rem 1.4rem;font:800 .95rem var(--f-display);cursor:pointer;color:var(--muted)}
+#spike-tabs button[aria-selected=true]{color:var(--ink);box-shadow:inset 0 -3px 0 var(--w1)}
+body.has-tabs .bar{top:2.6rem}
+#brief-layer.in-tab{padding-top:.2rem}
+.spike-more{display:block;margin:1rem 0 0;border:1px dashed var(--line);background:var(--bg);border-radius:12px;padding:.5rem .8rem;font-size:.9rem;font-weight:700;cursor:pointer;text-align:left;width:100%}
+.shelf .spike-ptr{border:0;background:none;text-decoration:underline;cursor:pointer;padding:0;font-size:.85rem}
+/* the PROTOTYPE switcher: deliberately not part of the design */
+#spike-bar{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:50;display:flex;flex-wrap:wrap;gap:.35rem .6rem;align-items:center;justify-content:center;width:max-content;max-width:calc(100vw - 16px);background:#111;color:#fff;border-radius:16px;padding:.4rem .7rem;font:600 .74rem/1.2 ui-monospace,Menlo,monospace;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#spike-bar button{background:#333;color:#fff;border:0;border-radius:6px;padding:.15rem .4rem;cursor:pointer;font:inherit}
+#spike-bar .sb-grp{display:inline-flex;gap:.3rem;align-items:center}
+#spike-bar .sb-tag{background:#e8b100;color:#111;border-radius:4px;padding:.1rem .3rem}
+body:not(.full) #spike-bar{position:sticky;bottom:auto;transform:none;left:auto;margin:.6rem auto;display:flex}
+#spike-tabs[hidden]{display:none}
+body.view-deck #brief-root{display:none}
+/* pointer sets for home B: how you get back to the card */
+.spike-return{position:sticky;top:2.6rem;z-index:8;padding:.5rem 0;background:var(--bg)}
+.spike-return button{width:100%;border:0;border-radius:12px;padding:.7rem .9rem;background:var(--ink);color:var(--paper);font-weight:700;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#brief-layer.sheet{position:fixed;inset:0;max-width:none;padding:0;z-index:30;background:rgba(0,0,0,.35);display:flex;align-items:flex-end}
+.spike-sheet{background:var(--bg);width:100%;max-height:88%;overflow:auto;border-radius:18px 18px 0 0;padding:0 1rem 2rem;box-shadow:0 -10px 30px rgba(0,0,0,.3)}
+.spike-sheet-top{position:sticky;top:0;background:var(--bg);display:flex;gap:.5rem;align-items:center;padding:.7rem 0;border-bottom:1px solid var(--line);z-index:2}
+.spike-sheet-top span{flex:1;font-weight:700;color:var(--muted);font-size:.9rem}
+.spike-sheet-top button:not(.go){border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:.3rem .7rem;font-weight:700;font-size:.85rem;cursor:pointer}
+.spike-sheet-top .go{padding:.4rem .9rem;font-size:.9rem}
+body.sheet-open{overflow:hidden}
+.spike-inline{margin:1rem 0 0;border-top:1px dashed var(--line);padding-top:.6rem}
+.spike-inline>summary{cursor:pointer;font-weight:700;font-size:.92rem}
+.spike-inline-body{font-size:.95rem}.spike-inline-body .b-sec{padding-top:.6rem}
+#brief-layer.in-tab .b-sec{scroll-margin-top:7.5rem}

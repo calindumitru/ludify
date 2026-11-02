@@ -1,0 +1,5 @@
+dist/
+brief.json
+deck.json
+links.json
+convert/*.json
